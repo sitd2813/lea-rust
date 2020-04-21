@@ -336,11 +336,12 @@ fn decrypt_block(round_key: &RoundKey, block: &mut Block) {
     let block = unsafe { &mut *(block.as_mut_ptr() as *mut [u32; 4]) };
 
     let mut i = 0;
+    let t = round_key.round as usize * 6 - 1;
     for _ in 0..(round_key.round >> 2) {
         for [a, b, c, d] in &[[0, 1, 2, 3], [3, 0, 1, 2], [2, 3, 0, 1], [1, 2, 3, 0]] {
-            block[*a] = block[*a].rotate_right(9).wrapping_sub(block[*d] ^ round_key.rk[186 - 6 * i]) ^ round_key.rk[187 - 6 * i];
-            block[*b] = block[*b].rotate_left(5).wrapping_sub(block[*a] ^ round_key.rk[188 - 6 * i]) ^ round_key.rk[189 - 6 * i];
-            block[*c] = block[*c].rotate_left(3).wrapping_sub(block[*b] ^ round_key.rk[190 - 6 * i]) ^ round_key.rk[191 - 6 * i];
+            block[*a] = block[*a].rotate_right(9).wrapping_sub(block[*d] ^ round_key.rk[t - 5 - 6 * i]) ^ round_key.rk[t - 4 - 6 * i];
+            block[*b] = block[*b].rotate_left(5).wrapping_sub(block[*a] ^ round_key.rk[t - 3 - 6 * i]) ^ round_key.rk[t - 2 - 6 * i];
+            block[*c] = block[*c].rotate_left(3).wrapping_sub(block[*b] ^ round_key.rk[t - 1 - 6 * i]) ^ round_key.rk[t - 6 * i];
             i += 1;
         }
     }
