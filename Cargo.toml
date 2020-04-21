@@ -1,0 +1,20 @@
+[package]
+authors = ["SitD <sitd0813@gmail.com>"]
+categories = ["cryptography", "no-std"]
+description = "LEA"
+documentation = "https://docs.rs/lea"
+edition = "2018"
+keywords = ["block-cipher", "crypto", "lea"]
+license = "Unlicense"
+name = "lea"
+readme = "README.md"
+repository = "https://github.com/sitd0813/lea-rust"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+block-cipher-trait = "0.6.*"
+
+[profile.release]
+lto = true
