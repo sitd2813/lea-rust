@@ -1,7 +1,0 @@
-brace_style = "PreferSameLine"
-fn_args_layout = "Compressed"
-max_width = 500
-newline_style = "Unix"
-tab_spaces = 4
-use_field_init_shorthand = true
-version = "Two"

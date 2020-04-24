@@ -4,7 +4,7 @@
 
   lea-rust provides the Rust implementation of the LEA.
 
-  Currently supported modes: none
+  Currently supported modes: CTR
 
 ## LEA
 
