@@ -14,14 +14,14 @@ extern crate test;
 use test::Bencher;
 
 use lea::block_cipher_trait::BlockCipher;
-use lea::generic_array::GenericArray;
+use lea::generic_array::arr;
+use lea::generic_array::arr_impl;
 use lea::{Lea128, Lea192, Lea256};
 
 //--- Lea128 ---//
 #[bench]
 fn lea128_generate_key(b: &mut Bencher) {
-    let key = b"hello123hello123";
-    let key = GenericArray::clone_from_slice(key);
+    let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0];
 
     b.iter(|| {
         Lea128::new(&key);
@@ -30,37 +30,33 @@ fn lea128_generate_key(b: &mut Bencher) {
 
 #[bench]
 fn lea128_encrypt_block(b: &mut Bencher) {
-    let key = b"hello123hello123";
-    let key = GenericArray::clone_from_slice(key);
+    let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0];
     let lea128 = Lea128::new(&key);
 
-    let plain = [104, 101, 108, 108, 111, 44, 32, 116, 104, 105, 115, 32, 105, 115, 32, 117];
-    let mut plain = GenericArray::clone_from_slice(&plain);
+    let mut block = arr![u8; 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F];
 
     b.iter(|| {
-        lea128.encrypt_block(&mut plain);
+        lea128.encrypt_block(&mut block);
     });
 }
 
 #[bench]
 fn lea128_decrypt_block(b: &mut Bencher) {
-    let key = b"hello123hello123";
-    let key = GenericArray::clone_from_slice(key);
+    let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0];
     let lea128 = Lea128::new(&key);
 
-    let cipher = [10, 141, 70, 151, 126, 206, 87, 170, 229, 76, 210, 23, 64, 128, 20, 224];
-    let mut cipher = GenericArray::clone_from_slice(&cipher);
+    let mut block = arr![u8; 0x9F, 0xC8, 0x4E, 0x35, 0x28, 0xC6, 0xC6, 0x18, 0x55, 0x32, 0xC7, 0xA7, 0x04, 0x64, 0x8B, 0xFD];
 
     b.iter(|| {
-        lea128.decrypt_block(&mut cipher);
+        lea128.decrypt_block(&mut block);
     });
 }
 
 //--- Lea192 ---//
 #[bench]
 fn lea192_generate_key(b: &mut Bencher) {
-    let key = b"hello123hello123hello123";
-    let key = GenericArray::clone_from_slice(key);
+    let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4,
+                       0xC3, 0xD2, 0xE1, 0xF0, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87];
 
     b.iter(|| {
         Lea192::new(&key);
@@ -69,37 +65,35 @@ fn lea192_generate_key(b: &mut Bencher) {
 
 #[bench]
 fn lea192_encrypt_block(b: &mut Bencher) {
-    let key = b"hello123hello123hello123";
-    let key = GenericArray::clone_from_slice(key);
+    let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4,
+                       0xC3, 0xD2, 0xE1, 0xF0, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87];
     let lea192 = Lea192::new(&key);
 
-    let plain = [104, 101, 108, 108, 111, 44, 32, 116, 104, 105, 115, 32, 105, 115, 32, 117];
-    let mut plain = GenericArray::clone_from_slice(&plain);
+    let mut block = arr![u8; 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F];
 
     b.iter(|| {
-        lea192.encrypt_block(&mut plain);
+        lea192.encrypt_block(&mut block);
     });
 }
 
 #[bench]
 fn lea192_decrypt_block(b: &mut Bencher) {
-    let key = b"hello123hello123hello123";
-    let key = GenericArray::clone_from_slice(key);
+    let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4,
+                       0xC3, 0xD2, 0xE1, 0xF0, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87];
     let lea192 = Lea192::new(&key);
 
-    let cipher = [10, 141, 70, 151, 126, 206, 87, 170, 229, 76, 210, 23, 64, 128, 20, 224];
-    let mut cipher = GenericArray::clone_from_slice(&cipher);
+    let mut block = arr![u8; 0x6F, 0xB9, 0x5E, 0x32, 0x5A, 0xAD, 0x1B, 0x87, 0x8C, 0xDC, 0xF5, 0x35, 0x76, 0x74, 0xC6, 0xF2];
 
     b.iter(|| {
-        lea192.decrypt_block(&mut cipher);
+        lea192.decrypt_block(&mut block);
     });
 }
 
 //--- Lea256 ---//
 #[bench]
 fn lea256_generate_key(b: &mut Bencher) {
-    let key = b"hello123hello123hello123hello123";
-    let key = GenericArray::clone_from_slice(key);
+    let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0,
+                       0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F];
 
     b.iter(|| {
         Lea256::new(&key);
@@ -108,28 +102,26 @@ fn lea256_generate_key(b: &mut Bencher) {
 
 #[bench]
 fn lea256_encrypt_block(b: &mut Bencher) {
-    let key = b"hello123hello123hello123hello123";
-    let key = GenericArray::clone_from_slice(key);
+    let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0,
+                       0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F];
     let lea256 = Lea256::new(&key);
 
-    let plain = [104, 101, 108, 108, 111, 44, 32, 116, 104, 105, 115, 32, 105, 115, 32, 117];
-    let mut plain = GenericArray::clone_from_slice(&plain);
+    let mut block = arr![u8; 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F];
 
     b.iter(|| {
-        lea256.encrypt_block(&mut plain);
+        lea256.encrypt_block(&mut block);
     });
 }
 
 #[bench]
 fn lea256_decrypt_block(b: &mut Bencher) {
-    let key = b"hello123hello123hello123hello123";
-    let key = GenericArray::clone_from_slice(key);
+    let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0,
+                       0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F];
     let lea256 = Lea256::new(&key);
 
-    let cipher = [10, 141, 70, 151, 126, 206, 87, 170, 229, 76, 210, 23, 64, 128, 20, 224];
-    let mut cipher = GenericArray::clone_from_slice(&cipher);
+    let mut block = arr![u8; 0xD6, 0x51, 0xAF, 0xF6, 0x47, 0xB1, 0x89, 0xC1, 0x3A, 0x89, 0x00, 0xCA, 0x27, 0xF9, 0xE1, 0x97];
 
     b.iter(|| {
-        lea256.decrypt_block(&mut cipher);
+        lea256.decrypt_block(&mut block);
     });
 }
