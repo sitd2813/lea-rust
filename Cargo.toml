@@ -9,14 +9,13 @@ license = "Unlicense"
 name = "lea"
 readme = "README.md"
 repository = "https://github.com/sitd0813/lea-rust"
-version = "0.2.1"
+version = "0.2.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 block-cipher-trait = "0.6.*"
 cfg-if = "0.1.*"
-generic-array = "0.12.*"
 stream-cipher = "0.3.*"
 
 [profile.release]
