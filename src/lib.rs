@@ -13,7 +13,6 @@
 //! ```
 //! use lea::Lea128;
 //! use lea::block_cipher_trait::BlockCipher;
-//! use lea::generic_array::GenericArray;
 //! use lea::generic_array::arr;
 //! use lea::generic_array::arr_impl;
 //!
@@ -33,7 +32,6 @@
 //! ```
 //! use lea::Lea128;
 //! use lea::block_cipher_trait::BlockCipher;
-//! use lea::generic_array::GenericArray;
 //! use lea::generic_array::arr;
 //! use lea::generic_array::arr_impl;
 //!
@@ -52,23 +50,16 @@
 //#![no_std]
 
 pub extern crate block_cipher_trait;
-pub extern crate generic_array;
 pub extern crate stream_cipher;
 
-mod ctr;
+pub use block_cipher_trait::generic_array;
+
+pub mod ctr;
 pub use ctr::{Lea128Ctr, Lea192Ctr, Lea256Ctr};
-mod gcm;
+// pub mod gcm;
 
 //--- General implementation ---//
 use cfg_if::cfg_if;
-
-cfg_if! {
-    if #[cfg(target_endian = "big")] {
-        use core::convert::TryInto;
-
-        use generic_array::typenum::{U4, U6};
-    }
-}
 
 use block_cipher_trait::BlockCipher;
 use generic_array::ArrayLength;
@@ -84,6 +75,9 @@ fn round_key_128_new(key_u8: &GenericArray<u8, U16>) -> GenericArray<u32, U144> 
 
     cfg_if! {
         if #[cfg(target_endian = "big")] {
+            use core::convert::TryInto;
+            use generic_array::typenum::U4;
+
             let mut key = GenericArray::<u32, U4>::default();
             for (key_u8, key) in (*key_u8).chunks(4).zip(&mut key) {
                 *key = u32::from_le_bytes(key_u8.try_into().unwrap());
@@ -118,6 +112,9 @@ fn round_key_192_new(key_u8: &GenericArray<u8, U24>) -> GenericArray<u32, U168> 
 
     cfg_if! {
         if #[cfg(target_endian = "big")] {
+            use core::convert::TryInto;
+            use generic_array::typenum::U6;
+
             let mut key = GenericArray::<u32, U6>::default();
             for (key_u8, key) in (*key_u8).chunks(4).zip(&mut key) {
                 *key = u32::from_le_bytes(key_u8.try_into().unwrap());
@@ -152,8 +149,10 @@ fn round_key_256_new(key_u8: &GenericArray<u8, U32>) -> GenericArray<u32, U192> 
 
     cfg_if! {
         if #[cfg(target_endian = "big")] {
+            use core::convert::TryInto;
+
             let mut key = GenericArray::<u32, U8>::default();
-            for (key_u8, key) in (*key_u8).chunks(4).zip(&mut key) {
+            for (key_u8, key) in (*key_u8).chunks(4).zip(key.iter_mut()) {
                 *key = u32::from_le_bytes(key_u8.try_into().unwrap());
             }
         } else if #[cfg(target_endian = "little")] {
@@ -181,77 +180,37 @@ fn round_key_256_new(key_u8: &GenericArray<u8, U32>) -> GenericArray<u32, U192> 
     rk
 }
 
-pub struct Lea128 {
-    round_key: GenericArray<u32, U144>,
+macro_rules! generate_lea {
+    ($name:ident, $round_key_new:ident, $round_key_size:ty, $key_size:ty) => {
+        pub struct $name {
+            round_key: GenericArray<u32, $round_key_size>,
+        }
+        
+        impl BlockCipher for $name {
+            type BlockSize = U16;
+            type KeySize = $key_size;
+            type ParBlocks = U8;
+        
+            fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
+                let round_key = $round_key_new(key);
+        
+                Self { round_key }
+            }
+        
+            fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
+                encrypt_block(&self.round_key, block);
+            }
+        
+            fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
+                decrypt_block(&self.round_key, block);
+            }
+        }
+    };
 }
 
-impl BlockCipher for Lea128 {
-    type BlockSize = U16;
-    type KeySize = U16;
-    type ParBlocks = U8;
-
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-        let round_key = round_key_128_new(key);
-
-        Self { round_key }
-    }
-
-    fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
-        encrypt_block(&self.round_key, block);
-    }
-
-    fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
-        decrypt_block(&self.round_key, block);
-    }
-}
-
-pub struct Lea192 {
-    round_key: GenericArray<u32, U168>,
-}
-
-impl BlockCipher for Lea192 {
-    type BlockSize = U16;
-    type KeySize = U24;
-    type ParBlocks = U8;
-
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-        let round_key = round_key_192_new(key);
-
-        Self { round_key }
-    }
-
-    fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
-        encrypt_block(&self.round_key, block);
-    }
-
-    fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
-        decrypt_block(&self.round_key, block);
-    }
-}
-
-pub struct Lea256 {
-    round_key: GenericArray<u32, U192>,
-}
-
-impl BlockCipher for Lea256 {
-    type BlockSize = U16;
-    type KeySize = U32;
-    type ParBlocks = U8;
-
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-        let round_key = round_key_256_new(key);
-
-        Self { round_key }
-    }
-
-    fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
-        encrypt_block(&self.round_key, block);
-    }
-
-    fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
-        decrypt_block(&self.round_key, block);
-    }
-}
+generate_lea!(Lea128, round_key_128_new, U144, U16);
+generate_lea!(Lea192, round_key_192_new, U168, U24);
+generate_lea!(Lea256, round_key_256_new, U192, U32);
 
 fn encrypt_block<L: ArrayLength<u32>>(round_key: &GenericArray<u32, L>, block: &mut GenericArray<u8, U16>) {
     #[cfg_attr(feature = "cargo-clippy", allow(clippy::cast_ptr_alignment))]
@@ -272,7 +231,6 @@ fn decrypt_block<L: ArrayLength<u32>>(round_key: &GenericArray<u32, L>, block: &
     #[cfg_attr(feature = "cargo-clippy", allow(clippy::cast_ptr_alignment))]
     let block = unsafe { &mut *(block.as_mut_ptr() as *mut [u32; 4]) };
 
-    // 5% slower but smaller binary size
     let mut i = 0;
     let t = L::USIZE - 1;
     for _ in 0..(L::USIZE / 24) {
