@@ -1,22 +1,22 @@
 [package]
-authors = ["SitD <sitd0813@gmail.com>"]
-categories = ["cryptography", "no-std"]
-description = "LEA"
+authors       = ["SitD <sitd0813@gmail.com>"]
+categories    = ["cryptography", "no-std"]
+description   = "LEA-128/192/256"
 documentation = "https://docs.rs/lea"
-edition = "2018"
-keywords = ["block-cipher", "crypto", "lea"]
-license = "Unlicense"
-name = "lea"
-readme = "README.md"
-repository = "https://github.com/sitd0813/lea-rust"
-version = "0.2.2"
+edition       = "2018"
+keywords      = ["block-cipher", "crypto", "lea"]
+license       = "Unlicense"
+name          = "lea"
+readme        = "README.md"
+repository    = "https://github.com/sitd0813/lea-rust"
+version       = "0.2.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 block-cipher-trait = "0.6.*"
-cfg-if = "0.1.*"
-stream-cipher = "0.3.*"
+cfg-if             = "0.1.*"
+stream-cipher      = "0.3.*"
 
 [profile.release]
 lto = true

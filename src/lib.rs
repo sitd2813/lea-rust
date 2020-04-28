@@ -213,32 +213,86 @@ generate_lea!(Lea192, round_key_192_new, U168, U24);
 generate_lea!(Lea256, round_key_256_new, U192, U32);
 
 fn encrypt_block<L: ArrayLength<u32>>(round_key: &GenericArray<u32, L>, block: &mut GenericArray<u8, U16>) {
-    #[cfg_attr(feature = "cargo-clippy", allow(clippy::cast_ptr_alignment))]
-    let block = unsafe { &mut *(block.as_mut_ptr() as *mut [u32; 4]) };
+    cfg_if! {
+        if #[cfg(target_endian = "big")] {
+            use core::convert::TryInto;
+            use generic_array::typenum::U4;
+
+            let block_u8 = block;
+            let mut block = GenericArray::<u32, U4>::default();
+
+            for (b_u8, b) in (*block_u8).chunks(4).zip(block.iter_mut()) {
+                *b = u32::from_le_bytes(b_u8.try_into().unwrap());
+            }
+        } else if #[cfg(target_endian = "little")] {
+            #[cfg_attr(feature = "cargo-clippy", allow(clippy::cast_ptr_alignment))]
+            let block = unsafe { &mut *(block.as_mut_ptr() as *mut [u32; 4]) };
+        }
+    }
 
     let mut i = 0;
     for _ in 0..(L::USIZE / 24) {
-        for [a, b, c, d] in &[[3, 2, 1, 0], [0, 3, 2, 1], [1, 0, 3, 2], [2, 1, 0, 3]] {
-            block[*a] = (block[*b] ^ round_key[6 * i + 4]).wrapping_add(block[*a] ^ round_key[6 * i + 5]).rotate_right(3);
-            block[*b] = (block[*c] ^ round_key[6 * i + 2]).wrapping_add(block[*b] ^ round_key[6 * i + 3]).rotate_right(5);
-            block[*c] = (block[*d] ^ round_key[6 * i]).wrapping_add(block[*c] ^ round_key[6 * i + 1]).rotate_left(9);
+        for &[a, b, c, d] in [[3, 2, 1, 0], [0, 3, 2, 1], [1, 0, 3, 2], [2, 1, 0, 3]].iter() {
+            block[a] = (block[b] ^ round_key[6 * i + 4]).wrapping_add(block[a] ^ round_key[6 * i + 5]).rotate_right(3);
+            block[b] = (block[c] ^ round_key[6 * i + 2]).wrapping_add(block[b] ^ round_key[6 * i + 3]).rotate_right(5);
+            block[c] = (block[d] ^ round_key[6 * i]).wrapping_add(block[c] ^ round_key[6 * i + 1]).rotate_left(9);
             i += 1;
+        }
+    }
+
+    cfg_if! {
+        if #[cfg(target_endian = "big")] {
+            let mut i = 0;
+            for b in block.iter() {
+                let b_to_u8 = b.to_le_bytes();
+                for b_to_u8 in b_to_u8.iter() {
+                    block_u8[i] = *b_to_u8;
+                    i += 1;
+                }
+            }
         }
     }
 }
 
 fn decrypt_block<L: ArrayLength<u32>>(round_key: &GenericArray<u32, L>, block: &mut GenericArray<u8, U16>) {
-    #[cfg_attr(feature = "cargo-clippy", allow(clippy::cast_ptr_alignment))]
-    let block = unsafe { &mut *(block.as_mut_ptr() as *mut [u32; 4]) };
+    cfg_if! {
+        if #[cfg(target_endian = "big")] {
+            use core::convert::TryInto;
+            use generic_array::typenum::U4;
+
+            let block_u8 = block;
+            let mut block = GenericArray::<u32, U4>::default();
+
+            for (b_u8, b) in (*block_u8).chunks(4).zip(block.iter_mut()) {
+                *b = u32::from_le_bytes(b_u8.try_into().unwrap());
+            }
+        } else if #[cfg(target_endian = "little")] {
+            #[cfg_attr(feature = "cargo-clippy", allow(clippy::cast_ptr_alignment))]
+            let block = unsafe { &mut *(block.as_mut_ptr() as *mut [u32; 4]) };
+        }
+    }
 
     let mut i = 0;
     let t = L::USIZE - 1;
     for _ in 0..(L::USIZE / 24) {
-        for [a, b, c, d] in &[[0, 1, 2, 3], [3, 0, 1, 2], [2, 3, 0, 1], [1, 2, 3, 0]] {
-            block[*a] = block[*a].rotate_right(9).wrapping_sub(block[*d] ^ round_key[t - 6 * i - 5]) ^ round_key[t - 6 * i - 4];
-            block[*b] = block[*b].rotate_left(5).wrapping_sub(block[*a] ^ round_key[t - 6 * i - 3]) ^ round_key[t - 6 * i - 2];
-            block[*c] = block[*c].rotate_left(3).wrapping_sub(block[*b] ^ round_key[t - 6 * i - 1]) ^ round_key[t - 6 * i];
+        for &[a, b, c, d] in [[0, 1, 2, 3], [3, 0, 1, 2], [2, 3, 0, 1], [1, 2, 3, 0]].iter() {
+            block[a] = block[a].rotate_right(9).wrapping_sub(block[d] ^ round_key[t - 6 * i - 5]) ^ round_key[t - 6 * i - 4];
+            block[b] = block[b].rotate_left(5).wrapping_sub(block[a] ^ round_key[t - 6 * i - 3]) ^ round_key[t - 6 * i - 2];
+            block[c] = block[c].rotate_left(3).wrapping_sub(block[b] ^ round_key[t - 6 * i - 1]) ^ round_key[t - 6 * i];
             i += 1;
+        }
+    }
+
+    cfg_if! {
+        if #[cfg(target_endian = "big")] {
+            let mut i = 0;
+            for b in block.iter() {
+                let b_to_u8 = b.to_le_bytes();
+                for b_to_u8 in b_to_u8.iter() {
+                    block_u8[i] = *b_to_u8;
+                    i += 1;
+                }
+            }
         }
     }
 }
