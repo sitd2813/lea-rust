@@ -2,8 +2,8 @@
 //
 // Author: SitD <sitd0813@gmail.com>
 //
-// This file is licensed under the Unlicense.
-// See LICENSE.txt for more information or you can obtain a copy at <http://unlicense.org/>.
+// This file is licensed under the MIT License.
+// See LICENSE.txt for more information or you can obtain a copy at <https://opensource.org/licenses/MIT>.
 
 //! LEA-128/192/256-CTR implementation
 //!
@@ -104,16 +104,16 @@ generate_lea_ctr!(Lea256Ctr, Lea256, U32);
 fn encrypt<C: BlockCipher>(cipher: &C, nonce: &GenericArray<u8, C::BlockSize>, data: &mut [u8]) {
     let mut counter = nonce.clone();
 
-    for data in data.chunks_mut(16) {
-        let mut block = counter.clone();
-        cipher.encrypt_block(&mut block);
+    data.chunks_mut(16).for_each(|data_16| {
+        let block = &mut (counter.clone());
+        cipher.encrypt_block(block);
 
-        for i in 0..(data.len()) {
-            data[i] ^= block[i];
-        }
+        data_16.iter_mut().zip(block.iter()).for_each(|(d, b)| {
+            *d ^= *b;
+        });
 
         increment_counter(&mut counter);
-    }
+    });
 }
 
 fn increment_counter<L: ArrayLength<u8>>(counter: &mut GenericArray<u8, L>) {

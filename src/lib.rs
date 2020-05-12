@@ -2,8 +2,8 @@
 //
 // Author: SitD <sitd0813@gmail.com>
 //
-// This file is licensed under the Unlicense.
-// See LICENSE.txt for more information or you can obtain a copy at <http://unlicense.org/>.
+// This file is licensed under the MIT License.
+// See LICENSE.txt for more information or you can obtain a copy at <https://opensource.org/licenses/MIT>.
 
 //! LEA-128/192/256 implementations
 //!
@@ -47,7 +47,7 @@
 //! assert_eq!(block, plain);
 //! ```
 
-//#![no_std]
+#![no_std]
 
 pub extern crate block_cipher_trait;
 pub extern crate stream_cipher;
@@ -59,16 +59,15 @@ pub use ctr::{Lea128Ctr, Lea192Ctr, Lea256Ctr};
 // pub mod gcm;
 
 //--- General implementation ---//
-use cfg_if::cfg_if;
+extern crate cfg_if;
 
 use block_cipher_trait::BlockCipher;
+use cfg_if::cfg_if;
 use generic_array::ArrayLength;
 use generic_array::GenericArray;
 use generic_array::typenum::{U8, U16, U24, U32, U144, U168, U192};
 
-static DELTA: [u32; 8] = [
-    0xC3EFE9DB, 0x44626B02, 0x79E27C8A, 0x78DF30EC, 0x715EA49E, 0xC785DA0A, 0xE04EF22A, 0xE5C40957,
-];
+static DELTA: [u32; 8] = [0xC3EFE9DB, 0x44626B02, 0x79E27C8A, 0x78DF30EC, 0x715EA49E, 0xC785DA0A, 0xE04EF22A, 0xE5C40957];
 
 fn round_key_128_new(key_u8: &GenericArray<u8, U16>) -> GenericArray<u32, U144> {
     let mut rk = GenericArray::default();
@@ -157,11 +156,11 @@ fn round_key_256_new(key_u8: &GenericArray<u8, U32>) -> GenericArray<u32, U192> 
             }
         } else if #[cfg(target_endian = "little")] {
             #[cfg_attr(feature = "cargo-clippy", allow(clippy::cast_ptr_alignment))]
-            let key = unsafe { &*(key_u8.as_ptr() as *const [u32; 8]) };
+            let key = unsafe { *(key_u8.as_ptr() as *const [u32; 8]) };
         }
     }
 
-    let mut t = key.clone();
+    let mut t = key;
     for i in 0..32 {
         t[(6 * i) % 8] = t[(6 * i) % 8].wrapping_add(DELTA[i % 8].rotate_left(i as u32)).rotate_left(1);
         t[(6 * i + 1) % 8] = t[(6 * i + 1) % 8].wrapping_add(DELTA[i % 8].rotate_left(i as u32 + 1)).rotate_left(3);
