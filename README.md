@@ -1,14 +1,28 @@
-# lea-rust
+# **lea-rust**
 
-  [![Crates.io](https://img.shields.io/crates/v/lea)](https://crates.io/crates/lea)
-  [![License](https://img.shields.io/github/license/sitd0813/lea-rust)](/LICENSE.txt)
+ [![crates.io](https://img.shields.io/crates/v/lea.svg)](https://crates.io/crates/lea)
+ [![doc.rs](https://docs.rs/lea/badge.svg)](https://docs.rs/lea)
 
-  lea-rust provides the Rust implementation of the LEA.
+ **lea-rust** is an implementation of a 128-bit ARX block cipher LEA written in Rust.
 
-  Currently supported modes: CTR
+## LEA(Lightweight Encryption Algorithm)
 
-## LEA
+ LEA(Lightweight Encryption Algorithm) is a 128-bit ARX block cipher algorithm developed by the South Korean National Security Research Institute in 2013. Designed to be faster and more lightweight, it maintains enough security to be the replacement of the AES.
 
-  LEA, the acronym of the Lightweight Encryption Algorithm, is a 128-bit block cipher algorithm developed by the South Korean National Security Research Institute in 2013. LEA is devised to be faster and more lightweight than AES without sacrificing security.
+ See <https://seed.kisa.or.kr/kisa/algorithm/EgovLeaInfo.do> for more information.
 
-  Check <https://seed.kisa.or.kr/kisa/algorithm/EgovLeaInfo.do> for more information.
+## Supports:
+
+ * LEA Block Cipher
+ * LEA Counter Mode (CTR)
+
+## Warning!
+
+ * I implemented the algorithm according to the specification sheet and the reference implementation written in C. However, I do not guarantee the security of this implementation.
+ * The implementation itself is endian-agnostic, but it is not tested on the big-endian device.
+
+## License
+
+ **lea-rust** is subject to the terms of the [`MIT License`](./LICENSE.txt).
+
+ If a copy of the MIT License was not distributed with this file, you can obtain one at <https://opensource.org/licenses/MIT>.

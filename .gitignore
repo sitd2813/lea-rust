@@ -1,3 +1,7 @@
-# Cargo files
-/target/
-/Cargo.lock
+# Rust
+.cargo/
+target/
+Cargo.lock
+
+# Visual Studio Code
+.vscode/
