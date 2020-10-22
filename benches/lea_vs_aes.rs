@@ -7,10 +7,7 @@ use criterion::{Criterion, black_box, criterion_group, criterion_main};
 
 use aes::{Aes128, Aes192, Aes256};
 use lea::{
-	block_cipher::{
-		generic_array::arr,
-		BlockCipher, NewBlockCipher
-	},
+	block_cipher::{generic_array::arr, BlockCipher, NewBlockCipher},
 	Lea128, Lea192, Lea256
 };
 

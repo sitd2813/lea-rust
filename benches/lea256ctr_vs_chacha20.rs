@@ -7,10 +7,7 @@ use criterion::{Criterion, black_box, criterion_group, criterion_main};
 
 use chacha20::ChaCha20;
 use lea::ctr::{
-	stream_cipher::{
-		generic_array::arr,
-		NewStreamCipher, SyncStreamCipher
-	},
+	stream_cipher::{generic_array::arr, NewStreamCipher, SyncStreamCipher},
 	Lea256Ctr
 };
 
