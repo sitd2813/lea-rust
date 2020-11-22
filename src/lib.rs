@@ -8,7 +8,7 @@
 //! * Example
 //! ```
 //! use lea::{
-//! 	block_cipher::{generic_array::arr, BlockCipher, NewBlockCipher},
+//! 	block::{generic_array::arr, BlockCipher, NewBlockCipher},
 //! 	Lea128
 //! };
 //!
@@ -31,12 +31,14 @@
 
 #![no_std]
 
-#[cfg(feature = "feature-ctr")]
+#[cfg(feature = "ccm")]
+pub mod ccm;
+#[cfg(feature = "ctr")]
 pub mod ctr;
 
-pub use cipher::block as block_cipher;
-
 mod round_key;
+
+pub use cipher::block;
 
 use core::mem;
 
@@ -49,7 +51,6 @@ use zeroize::Zeroize;
 
 use round_key::{RoundKey, Rk144, Rk168, Rk192};
 
-pub type Block = GenericArray<u8, U16>;
 pub type Lea128 = Lea<Rk144>;
 pub type Lea192 = Lea<Rk168>;
 pub type Lea256 = Lea<Rk192>;
@@ -71,11 +72,11 @@ Rk: RoundKey {
 	type BlockSize = U16;
 	type ParBlocks = U8;
 
-	fn encrypt_block(&self, block: &mut Block) {
+	fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
 		encrypt_block::<Rk>(&self.rk, block);
 	}
 
-	fn decrypt_block(&self, block: &mut Block) {
+	fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
 		decrypt_block::<Rk>(&self.rk, block);
 	}
 }
@@ -89,7 +90,7 @@ Rk: RoundKey {
 	}
 }
 
-fn encrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut Block) {
+fn encrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut GenericArray<u8, <Lea<Rk> as BlockCipher>::BlockSize>) {
 	cfg_if::cfg_if! {
 		if #[cfg(target_endian = "big")] {
 			let block = unsafe { mem::transmute::<_, &mut [u32; 4]>(block) };
@@ -223,7 +224,7 @@ fn encrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut B
 	}
 }
 
-fn decrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut Block) {
+fn decrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut GenericArray<u8, <Lea<Rk> as BlockCipher>::BlockSize>) {
 	cfg_if::cfg_if! {
 		if #[cfg(target_endian = "big")] {
 			let block = unsafe { mem::transmute::<_, &mut [u32; 4]>(block) };
@@ -360,64 +361,89 @@ fn decrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut B
 #[cfg(test)]
 mod tests {
 	use super::{
-		block_cipher::{generic_array::arr, BlockCipher, NewBlockCipher},
+		block::{generic_array::{GenericArray, arr}, BlockCipher, NewBlockCipher},
 		Lea128, Lea192, Lea256
 	};
 
+	struct TestCase<T> where
+	T: BlockCipher + NewBlockCipher {
+		key: GenericArray<u8, <T as NewBlockCipher>::KeySize>,
+		ptxt: GenericArray<u8, <T as BlockCipher>::BlockSize>,
+		ctxt: GenericArray<u8, <T as BlockCipher>::BlockSize>
+	}
+
 	#[test]
 	fn lea128() {
-		let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0];
-		let ptxt = arr![u8; 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F];
-		let ctxt = arr![u8; 0x9F, 0xC8, 0x4E, 0x35, 0x28, 0xC6, 0xC6, 0x18, 0x55, 0x32, 0xC7, 0xA7, 0x04, 0x64, 0x8B, 0xFD];
+		let test_cases: [TestCase<Lea128>; 1] = [
+			TestCase {
+				key: arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0],
+				ptxt: arr![u8; 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F],
+				ctxt: arr![u8; 0x9F, 0xC8, 0x4E, 0x35, 0x28, 0xC6, 0xC6, 0x18, 0x55, 0x32, 0xC7, 0xA7, 0x04, 0x64, 0x8B, 0xFD]
+			}
+		];
 
-		let lea128 = Lea128::new(&key);
+		for test_case in test_cases.iter() {
+			let lea128 = Lea128::new(&test_case.key);
 
-		// Encryption
-		let mut block = ptxt.clone();
-		lea128.encrypt_block(&mut block);
-		assert_eq!(block, ctxt);
+			// Encryption
+			let mut block = test_case.ptxt.clone();
+			lea128.encrypt_block(&mut block);
+			assert_eq!(block, test_case.ctxt);
 
-		// Decryption
-		let mut block = ctxt.clone();
-		lea128.decrypt_block(&mut block);
-		assert_eq!(block, ptxt);
+			// Decryption
+			let mut block = test_case.ctxt.clone();
+			lea128.decrypt_block(&mut block);
+			assert_eq!(block, test_case.ptxt);
+		}
 	}
 
 	#[test]
 	fn lea192() {
-		let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4,	0xC3, 0xD2, 0xE1, 0xF0, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87];
-		let ptxt = arr![u8; 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F];
-		let ctxt = arr![u8; 0x6F, 0xB9, 0x5E, 0x32, 0x5A, 0xAD, 0x1B, 0x87, 0x8C, 0xDC, 0xF5, 0x35, 0x76, 0x74, 0xC6, 0xF2];
+		let test_cases: [TestCase<Lea192>; 1] = [
+			TestCase {
+				key: arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4,	0xC3, 0xD2, 0xE1, 0xF0, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87],
+				ptxt: arr![u8; 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F],
+				ctxt: arr![u8; 0x6F, 0xB9, 0x5E, 0x32, 0x5A, 0xAD, 0x1B, 0x87, 0x8C, 0xDC, 0xF5, 0x35, 0x76, 0x74, 0xC6, 0xF2]
+			}
+		];
 
-		let lea192 = Lea192::new(&key);
+		for test_case in test_cases.iter() {
+			let lea192 = Lea192::new(&test_case.key);
 
-		// Encryption
-		let mut block = ptxt.clone();
-		lea192.encrypt_block(&mut block);
-		assert_eq!(block, ctxt);
+			// Encryption
+			let mut block = test_case.ptxt.clone();
+			lea192.encrypt_block(&mut block);
+			assert_eq!(block, test_case.ctxt);
 
-		// Decryption
-		let mut block = ctxt.clone();
-		lea192.decrypt_block(&mut block);
-		assert_eq!(block, ptxt);
+			// Decryption
+			let mut block = test_case.ctxt.clone();
+			lea192.decrypt_block(&mut block);
+			assert_eq!(block, test_case.ptxt);
+		}
 	}
 
 	#[test]
 	fn lea256() {
-		let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0,	0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F];
-		let ptxt = arr![u8; 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F];
-		let ctxt = arr![u8; 0xD6, 0x51, 0xAF, 0xF6, 0x47, 0xB1, 0x89, 0xC1, 0x3A, 0x89, 0x00, 0xCA, 0x27, 0xF9, 0xE1, 0x97];
+		let test_cases: [TestCase<Lea256>; 1] = [
+			TestCase {
+				key: arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0,	0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F],
+				ptxt: arr![u8; 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F],
+				ctxt: arr![u8; 0xD6, 0x51, 0xAF, 0xF6, 0x47, 0xB1, 0x89, 0xC1, 0x3A, 0x89, 0x00, 0xCA, 0x27, 0xF9, 0xE1, 0x97]
+			}
+		];
 
-		let lea256 = Lea256::new(&key);
+		for test_case in test_cases.iter() {
+			let lea256 = Lea256::new(&test_case.key);
 
-		// Encryption
-		let mut block = ptxt.clone();
-		lea256.encrypt_block(&mut block);
-		assert_eq!(block, ctxt);
+			// Encryption
+			let mut block = test_case.ptxt.clone();
+			lea256.encrypt_block(&mut block);
+			assert_eq!(block, test_case.ctxt);
 
-		// Decryption
-		let mut block = ctxt.clone();
-		lea256.decrypt_block(&mut block);
-		assert_eq!(block, ptxt);
+			// Decryption
+			let mut block = test_case.ctxt.clone();
+			lea256.decrypt_block(&mut block);
+			assert_eq!(block, test_case.ptxt);
+		}
 	}
 }

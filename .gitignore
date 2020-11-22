@@ -1,7 +1,7 @@
 # Rust
-.cargo/
-target/
-Cargo.lock
+/.cargo/
+/target/
+/Cargo.lock
 
 # Visual Studio Code
-.vscode/
+/.vscode/
