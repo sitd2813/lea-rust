@@ -7,14 +7,15 @@ keywords    = ["cipher", "cryptography", "lea"]
 license     = "MIT"
 name        = "lea"
 repository  = "https://github.com/sitd0813/lea-rust"
-version     = "0.3.1"
+version     = "0.4.0"
 
 [dependencies]
-cfg-if  = "1.*.*"
+cfg-if  = "1.0.*"
 cipher  = "0.2.*"
 zeroize = "1.1.*"
 
-ctr = { version = "0.6.*", optional = true }
+ccm_crate = { package = "ccm", version = "0.3.*", optional = true }
+ctr_crate = { package = "ctr", version = "0.6.*", optional = true }
 
 [dev-dependencies]
 aes       = "0.6.*"
@@ -22,8 +23,10 @@ chacha20  = "0.6.*"
 criterion = "0.3.*"
 
 [features]
-default = ["feature-ctr"]
-feature-ctr = ["ctr"]
+default = ["ccm", "ctr"]
+
+ccm = ["ccm_crate"]
+ctr = ["ctr_crate"]
 
 [[bench]]
 harness = false

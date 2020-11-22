@@ -11,17 +11,16 @@ LEA(Lightweight Encryption Algorithm) is a 128-bit ARX block cipher algorithm de
 
 See <https://seed.kisa.or.kr/kisa/algorithm/EgovLeaInfo.do> for more information.
 
-## Supports
+## Features
 
-- LEA Block Cipher
-
-- LEA Counter Mode (CTR)
+- LEA Block Cipher (Default)
+- LEA-CCM (Default feature, `features = ["ccm"]`)
+- LEA-CTR (Default feature, `features = ["ctr"]`)
 
 ## **WARNING, USE AT YOUR OWN RISK!**
 
 - This implementation has not received any security audit.
-
-- The implementation is meant to be is endian-agnostic, but it is not tested on big-endian devices.
+- This implementation has not been tested on big-endian devices.
 
 ## License
 
