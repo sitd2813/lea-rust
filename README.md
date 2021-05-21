@@ -5,9 +5,9 @@
 
 **lea-rust** is an implementation of a 128-bit ARX block cipher LEA written in pure Rust.
 
-## LEA(Lightweight Encryption Algorithm)
+## Lightweight Encryption Algorithm (LEA)
 
-LEA(Lightweight Encryption Algorithm) is a 128-bit ARX block cipher algorithm developed by the South Korean National Security Research Institute in 2013. Designed to be faster and more lightweight, it maintains enough security to be the replacement of the AES.
+Lightweight Encryption Algorithm (LEA) is a 128-bit ARX block cipher algorithm developed by the South Korean National Security Research Institute in 2013. Designed to be faster and more lightweight, it maintains enough security to be the replacement of the AES.
 
 See <https://en.wikipedia.org/wiki/LEA_(cipher)> and <https://seed.kisa.or.kr/kisa/algorithm/EgovLeaInfo.do> for more information.
 
