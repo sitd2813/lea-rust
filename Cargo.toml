@@ -1,37 +1,39 @@
 [package]
+name        = "lea"
+version     = "0.5.0"
 authors     = ["SitD <sitd0813@gmail.com>"]
-categories  = ["cryptography", "no-std"]
-description = "LEA(Lightweight Encryption Algorithm)"
 edition     = "2018"
+description = "Lightweight Encryption Algorithm (LEA)"
+categories  = ["cryptography", "no-std"]
 keywords    = ["cipher", "cryptography", "lea"]
 license     = "MIT"
-name        = "lea"
 repository  = "https://github.com/sitd0813/lea-rust"
-version     = "0.4.0"
 
 [dependencies]
-cfg-if  = "1.0.*"
-cipher  = "0.2.*"
-zeroize = "1.1.*"
+cfg-if = "1.*.*"
+cipher = "0.3.*"
 
-ccm_crate = { package = "ccm", version = "0.3.*", optional = true }
-ctr_crate = { package = "ctr", version = "0.6.*", optional = true }
+ccm = { version = "0.4.*", optional = true }
+ctr = { version = "0.7.*", optional = true }
+zeroize = { version = "1.*.*", optional = true, default-features = false }
 
 [dev-dependencies]
-aes       = "0.6.*"
-chacha20  = "0.6.*"
 criterion = "0.3.*"
+criterion-cycles-per-byte = "0.1.*"
 
 [features]
-default = ["ccm", "ctr"]
-
-ccm = ["ccm_crate"]
-ctr = ["ctr_crate"]
+default = []
 
 [[bench]]
 harness = false
-name    = "lea_vs_aes"
+name = "lea"
 
 [[bench]]
 harness = false
-name    = "lea256ctr_vs_chacha20"
+name = "lea-ccm"
+required-features = ["ccm"]
+
+[[bench]]
+harness = false
+name = "lea-ctr"
+required-features = ["ctr"]

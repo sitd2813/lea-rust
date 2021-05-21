@@ -1,4 +1,4 @@
-// Copyright © 2020 SitD <sitd0813@gmail.com>
+// Copyright © 2020–2021 SitD <sitd0813@gmail.com>
 //
 // This file is subject to the terms of the MIT License.
 // If a copy of the MIT License was not distributed with this file, you can obtain one at https://opensource.org/licenses/MIT.
@@ -7,10 +7,7 @@
 //!
 //! * Example
 //! ```
-//! use lea::ccm::{
-//! 	aead::{consts::U8, generic_array::arr, AeadInPlace, NewAead},
-//! 	Lea128Ccm
-//! };
+//! use lea::{ccm::aead, prelude::*, Lea128Ccm};
 //!
 //! let key = arr![u8; 0x67, 0x0F, 0xD2, 0x86, 0xDF, 0x28, 0x3C, 0x66, 0x2D, 0xB8, 0x64, 0xA6, 0x81, 0xB9, 0xAB, 0x35];
 //! let nonce = arr![u8; 0xE5, 0x9E, 0x05, 0x4A, 0x7E, 0x8B, 0x58, 0x40];
@@ -24,17 +21,15 @@
 //!
 //! // Encryption
 //! let mut buffer = ptxt.clone();
-//! let calculated_tag = lea128ccm.encrypt_in_place_detached(&nonce, &associated_data, &mut buffer).unwrap();
+//! let calculated_tag: Result<_, aead::Error> = lea128ccm.encrypt_in_place_detached(&nonce, &associated_data, &mut buffer);
 //! assert_eq!(buffer, ctxt);
-//! assert_eq!(calculated_tag, tag);
+//! assert_eq!(calculated_tag.unwrap(), tag);
 //!
 //! // Decryption
 //! let mut buffer = ctxt.clone();
-//! lea128ccm.decrypt_in_place_detached(&nonce, &associated_data, &mut buffer, &tag).unwrap();
+//! let _: Result<(), aead::Error> = lea128ccm.decrypt_in_place_detached(&nonce, &associated_data, &mut buffer, &tag);
 //! assert_eq!(buffer, ptxt);
 //! ```
-
-extern crate ccm_crate as ccm;
 
 pub use ccm::aead;
 
@@ -53,20 +48,13 @@ mod tests {
 
 	use alloc::{vec::Vec, vec};
 
-	use super::{
-		aead::{
-			consts::U8,
-			generic_array::{GenericArray, arr},
-			AeadInPlace, NewAead, Error
-		},
-		Lea128Ccm, Lea192Ccm, Lea256Ccm
-	};
+	use crate::{ccm::aead::Error, prelude::*, Lea128Ccm, Lea192Ccm, Lea256Ccm};
 
 	struct TestCase<T> where
 	T: AeadInPlace + NewAead {
 		key: GenericArray<u8, <T as NewAead>::KeySize>,
-		nonce: GenericArray<u8, <T as AeadInPlace>::NonceSize>,
-		tag: GenericArray<u8, <T as AeadInPlace>::TagSize>,
+		nonce: GenericArray<u8, <T as AeadCore>::NonceSize>,
+		tag: GenericArray<u8, <T as AeadCore>::TagSize>,
 		associated_data: Vec<u8>,
 		ptxt: Vec<u8>,
 		ctxt: Vec<u8>

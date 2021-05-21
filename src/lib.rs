@@ -1,4 +1,4 @@
-// Copyright © 2020 SitD <sitd0813@gmail.com>
+// Copyright © 2020–2021 SitD <sitd0813@gmail.com>
 //
 // This file is subject to the terms of the MIT License.
 // If a copy of the MIT License was not distributed with this file, you can obtain one at https://opensource.org/licenses/MIT.
@@ -7,10 +7,7 @@
 //!
 //! * Example
 //! ```
-//! use lea::{
-//! 	block::{generic_array::arr, BlockCipher, NewBlockCipher},
-//! 	Lea128
-//! };
+//! use lea::{prelude::*, Lea128};
 //!
 //! let key = arr![u8; 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0];
 //! let ptxt = arr![u8; 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F];
@@ -31,6 +28,16 @@
 
 #![no_std]
 
+pub mod prelude {
+	pub use crate::cipher::{generic_array::{GenericArray, arr}, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
+
+	#[cfg(feature = "ccm")]
+	pub use crate::ccm::aead::{consts::{U7, U8, U9, U10, U11, U12, U13}, AeadCore, AeadInPlace, NewAead};
+
+	#[cfg(feature = "ctr")]
+	pub use crate::ctr::cipher::{NewCipher, StreamCipher, StreamCipherSeek};
+}
+
 #[cfg(feature = "ccm")]
 pub mod ccm;
 #[cfg(feature = "ctr")]
@@ -38,16 +45,18 @@ pub mod ctr;
 
 mod round_key;
 
-pub use cipher::block;
+pub use cipher;
 
-use core::mem;
+#[cfg(feature = "ccm")]
+pub use crate::ccm::{Lea128Ccm, Lea192Ccm, Lea256Ccm};
+#[cfg(feature = "ctr")]
+pub use crate::ctr::{Lea128Ctr, Lea192Ctr, Lea256Ctr};
 
 use cipher::{
 	consts::{U8, U16},
 	generic_array::{typenum::Unsigned, GenericArray},
-	BlockCipher, NewBlockCipher,
+	BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher
 };
-use zeroize::Zeroize;
 
 use round_key::{RoundKey, Rk144, Rk168, Rk192};
 
@@ -60,24 +69,23 @@ Rk: RoundKey {
 	rk: GenericArray<u32, Rk::RkSize>
 }
 
-impl<Rk> Drop for Lea<Rk> where
-Rk: RoundKey {
-	fn drop(&mut self) {
-		self.rk.as_mut_slice().zeroize();
-	}
-}
-
 impl<Rk> BlockCipher for Lea<Rk> where
 Rk: RoundKey {
 	type BlockSize = U16;
 	type ParBlocks = U8;
+}
 
-	fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
-		encrypt_block::<Rk>(&self.rk, block);
-	}
-
+impl<Rk> BlockDecrypt for Lea<Rk> where
+Rk: RoundKey {
 	fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
 		decrypt_block::<Rk>(&self.rk, block);
+	}
+}
+
+impl<Rk> BlockEncrypt for Lea<Rk> where
+Rk: RoundKey {
+	fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
+		encrypt_block::<Rk>(&self.rk, block);
 	}
 }
 
@@ -86,23 +94,33 @@ Rk: RoundKey {
 	type KeySize = Rk::KeySize;
 
 	fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-		Self { rk: Rk::new(key) }
+		Self { rk: Rk::generate(key) }
 	}
 }
 
-fn encrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut GenericArray<u8, <Lea<Rk> as BlockCipher>::BlockSize>) {
+fn encrypt_block<Rk>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut GenericArray<u8, <Lea<Rk> as BlockCipher>::BlockSize>) where
+Rk: RoundKey {
+	let block = unsafe { &mut *block.as_mut_ptr().cast::<[u32; 4]>() };
 	cfg_if::cfg_if! {
 		if #[cfg(target_endian = "big")] {
-			let block = unsafe { mem::transmute::<_, &mut [u32; 4]>(block) };
 			block[0] = block[0].swap_bytes();
 			block[1] = block[1].swap_bytes();
 			block[2] = block[2].swap_bytes();
 			block[3] = block[3].swap_bytes();
-		} else {
-			let block = unsafe { mem::transmute::<_, &mut [u32; 4]>(block) };
 		}
 	}
 
+	// Slower reference implementation which emits slightly smaller binary
+	// for i in 0..(<Rk::RkSize as Unsigned>::USIZE / 6) {
+	// 	let [p0, p1, p2, p3] = *block;
+	// 	if let [rk0, rk1, rk2, rk3, rk4, rk5] = rk[(6 * i)..(6 * (i + 1))] {
+	// 		block[0] = (p0 ^ rk0).wrapping_add(p1 ^ rk1).rotate_left(9);
+	// 		block[1] = (p1 ^ rk2).wrapping_add(p2 ^ rk3).rotate_right(5);
+	// 		block[2] = (p2 ^ rk4).wrapping_add(p3 ^ rk5).rotate_right(3);
+	// 		block[3] = p0;
+	// 	}
+	// }
+	
 	// 24 rounds for 128-bit key
 	block[3] = (block[2] ^ rk[4]).wrapping_add(block[3] ^ rk[5]).rotate_right(3);
 	block[2] = (block[1] ^ rk[2]).wrapping_add(block[2] ^ rk[3]).rotate_right(5);
@@ -196,22 +214,22 @@ fn encrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut G
 		block[2] = (block[1] ^ rk[166]).wrapping_add(block[2] ^ rk[167]).rotate_right(3);
 		block[1] = (block[0] ^ rk[164]).wrapping_add(block[1] ^ rk[165]).rotate_right(5);
 		block[0] = (block[3] ^ rk[162]).wrapping_add(block[0] ^ rk[163]).rotate_left(9);
-	}
 
-	// 32 rounds for 256-bit key
-	if <Rk::RkSize as Unsigned>::USIZE / 6 >= 32 {
-		block[3] = (block[2] ^ rk[172]).wrapping_add(block[3] ^ rk[173]).rotate_right(3);
-		block[2] = (block[1] ^ rk[170]).wrapping_add(block[2] ^ rk[171]).rotate_right(5);
-		block[1] = (block[0] ^ rk[168]).wrapping_add(block[1] ^ rk[169]).rotate_left(9);
-		block[0] = (block[3] ^ rk[178]).wrapping_add(block[0] ^ rk[179]).rotate_right(3);
-		block[3] = (block[2] ^ rk[176]).wrapping_add(block[3] ^ rk[177]).rotate_right(5);
-		block[2] = (block[1] ^ rk[174]).wrapping_add(block[2] ^ rk[175]).rotate_left(9);
-		block[1] = (block[0] ^ rk[184]).wrapping_add(block[1] ^ rk[185]).rotate_right(3);
-		block[0] = (block[3] ^ rk[182]).wrapping_add(block[0] ^ rk[183]).rotate_right(5);
-		block[3] = (block[2] ^ rk[180]).wrapping_add(block[3] ^ rk[181]).rotate_left(9);
-		block[2] = (block[1] ^ rk[190]).wrapping_add(block[2] ^ rk[191]).rotate_right(3);
-		block[1] = (block[0] ^ rk[188]).wrapping_add(block[1] ^ rk[189]).rotate_right(5);
-		block[0] = (block[3] ^ rk[186]).wrapping_add(block[0] ^ rk[187]).rotate_left(9);
+		// 32 rounds for 256-bit key
+		if <Rk::RkSize as Unsigned>::USIZE / 6 >= 32 {
+			block[3] = (block[2] ^ rk[172]).wrapping_add(block[3] ^ rk[173]).rotate_right(3);
+			block[2] = (block[1] ^ rk[170]).wrapping_add(block[2] ^ rk[171]).rotate_right(5);
+			block[1] = (block[0] ^ rk[168]).wrapping_add(block[1] ^ rk[169]).rotate_left(9);
+			block[0] = (block[3] ^ rk[178]).wrapping_add(block[0] ^ rk[179]).rotate_right(3);
+			block[3] = (block[2] ^ rk[176]).wrapping_add(block[3] ^ rk[177]).rotate_right(5);
+			block[2] = (block[1] ^ rk[174]).wrapping_add(block[2] ^ rk[175]).rotate_left(9);
+			block[1] = (block[0] ^ rk[184]).wrapping_add(block[1] ^ rk[185]).rotate_right(3);
+			block[0] = (block[3] ^ rk[182]).wrapping_add(block[0] ^ rk[183]).rotate_right(5);
+			block[3] = (block[2] ^ rk[180]).wrapping_add(block[3] ^ rk[181]).rotate_left(9);
+			block[2] = (block[1] ^ rk[190]).wrapping_add(block[2] ^ rk[191]).rotate_right(3);
+			block[1] = (block[0] ^ rk[188]).wrapping_add(block[1] ^ rk[189]).rotate_right(5);
+			block[0] = (block[3] ^ rk[186]).wrapping_add(block[0] ^ rk[187]).rotate_left(9);
+		}
 	}
 
 	cfg_if::cfg_if! {
@@ -224,37 +242,47 @@ fn encrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut G
 	}
 }
 
-fn decrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut GenericArray<u8, <Lea<Rk> as BlockCipher>::BlockSize>) {
+fn decrypt_block<Rk>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut GenericArray<u8, <Lea<Rk> as BlockCipher>::BlockSize>) where
+Rk: RoundKey {
+	let block = unsafe { &mut *block.as_mut_ptr().cast::<[u32; 4]>() };
 	cfg_if::cfg_if! {
 		if #[cfg(target_endian = "big")] {
-			let block = unsafe { mem::transmute::<_, &mut [u32; 4]>(block) };
 			block[0] = block[0].swap_bytes();
 			block[1] = block[1].swap_bytes();
 			block[2] = block[2].swap_bytes();
 			block[3] = block[3].swap_bytes();
-		} else {
-			let block = unsafe { mem::transmute::<_, &mut [u32; 4]>(block) };
 		}
 	}
 
-	// 32 rounds for 256-bit key
-	if <Rk::RkSize as Unsigned>::USIZE / 6 >= 32 {
-		block[0] = block[0].rotate_right(9).wrapping_sub(block[3] ^ rk[186]) ^ rk[187];
-		block[1] = block[1].rotate_left(5).wrapping_sub(block[0] ^ rk[188]) ^ rk[189];
-		block[2] = block[2].rotate_left(3).wrapping_sub(block[1] ^ rk[190]) ^ rk[191];
-		block[3] = block[3].rotate_right(9).wrapping_sub(block[2] ^ rk[180]) ^ rk[181];
-		block[0] = block[0].rotate_left(5).wrapping_sub(block[3] ^ rk[182]) ^ rk[183];
-		block[1] = block[1].rotate_left(3).wrapping_sub(block[0] ^ rk[184]) ^ rk[185];
-		block[2] = block[2].rotate_right(9).wrapping_sub(block[1] ^ rk[174]) ^ rk[175];
-		block[3] = block[3].rotate_left(5).wrapping_sub(block[2] ^ rk[176]) ^ rk[177];
-		block[0] = block[0].rotate_left(3).wrapping_sub(block[3] ^ rk[178]) ^ rk[179];
-		block[1] = block[1].rotate_right(9).wrapping_sub(block[0] ^ rk[168]) ^ rk[169];
-		block[2] = block[2].rotate_left(5).wrapping_sub(block[1] ^ rk[170]) ^ rk[171];
-		block[3] = block[3].rotate_left(3).wrapping_sub(block[2] ^ rk[172]) ^ rk[173];
-	}
+	// Slower reference implementation which emits slightly smaller binary
+	// for i in (0..(<Rk::RkSize as Unsigned>::USIZE / 6)).rev() {
+	// 	let [c0, c1, c2, c3] = *block;
+	// 	if let [rk0, rk1, rk2, rk3, rk4, rk5] = rk[(6 * i)..(6 * (i + 1))] {
+	// 		block[0] = c3;
+	// 		block[1] = c0.rotate_right(9).wrapping_sub(block[0] ^ rk0) ^ rk1;
+	// 		block[2] = c1.rotate_left(5).wrapping_sub(block[1] ^ rk2) ^ rk3;
+	// 		block[3] = c2.rotate_left(3).wrapping_sub(block[2] ^ rk4) ^ rk5;
+	// 	}
+	// }
 	
 	// 28 rounds for 192-bit key
 	if <Rk::RkSize as Unsigned>::USIZE / 6 >= 28 {
+		// 32 rounds for 256-bit key
+		if <Rk::RkSize as Unsigned>::USIZE / 6 >= 32 {
+			block[0] = block[0].rotate_right(9).wrapping_sub(block[3] ^ rk[186]) ^ rk[187];
+			block[1] = block[1].rotate_left(5).wrapping_sub(block[0] ^ rk[188]) ^ rk[189];
+			block[2] = block[2].rotate_left(3).wrapping_sub(block[1] ^ rk[190]) ^ rk[191];
+			block[3] = block[3].rotate_right(9).wrapping_sub(block[2] ^ rk[180]) ^ rk[181];
+			block[0] = block[0].rotate_left(5).wrapping_sub(block[3] ^ rk[182]) ^ rk[183];
+			block[1] = block[1].rotate_left(3).wrapping_sub(block[0] ^ rk[184]) ^ rk[185];
+			block[2] = block[2].rotate_right(9).wrapping_sub(block[1] ^ rk[174]) ^ rk[175];
+			block[3] = block[3].rotate_left(5).wrapping_sub(block[2] ^ rk[176]) ^ rk[177];
+			block[0] = block[0].rotate_left(3).wrapping_sub(block[3] ^ rk[178]) ^ rk[179];
+			block[1] = block[1].rotate_right(9).wrapping_sub(block[0] ^ rk[168]) ^ rk[169];
+			block[2] = block[2].rotate_left(5).wrapping_sub(block[1] ^ rk[170]) ^ rk[171];
+			block[3] = block[3].rotate_left(3).wrapping_sub(block[2] ^ rk[172]) ^ rk[173];
+		}
+
 		block[0] = block[0].rotate_right(9).wrapping_sub(block[3] ^ rk[162]) ^ rk[163];
 		block[1] = block[1].rotate_left(5).wrapping_sub(block[0] ^ rk[164]) ^ rk[165];
 		block[2] = block[2].rotate_left(3).wrapping_sub(block[1] ^ rk[166]) ^ rk[167];
@@ -360,10 +388,7 @@ fn decrypt_block<Rk: RoundKey>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut G
 
 #[cfg(test)]
 mod tests {
-	use super::{
-		block::{generic_array::{GenericArray, arr}, BlockCipher, NewBlockCipher},
-		Lea128, Lea192, Lea256
-	};
+	use crate::{prelude::*, Lea128, Lea192, Lea256};
 
 	struct TestCase<T> where
 	T: BlockCipher + NewBlockCipher {
