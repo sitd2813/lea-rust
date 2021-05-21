@@ -1,4 +1,4 @@
-// Copyright © 2020 SitD <sitd0813@gmail.com>
+// Copyright © 2020–2021 SitD <sitd0813@gmail.com>
 //
 // This file is subject to the terms of the MIT License.
 // If a copy of the MIT License was not distributed with this file, you can obtain one at https://opensource.org/licenses/MIT.
@@ -7,10 +7,7 @@
 //! 
 //! * Example
 //! ```
-//! use lea::ctr::{
-//! 	stream::{generic_array::arr, NewStreamCipher, SyncStreamCipher, SyncStreamCipherSeek},
-//! 	Lea128Ctr
-//! };
+//! use lea::{prelude::*, Lea128Ctr};
 //!
 //! let key = arr![u8; 0x7A, 0xD3, 0x6A, 0x75, 0xD5, 0x5F, 0x30, 0x22, 0x09, 0x4E, 0x06, 0xF7, 0xC8, 0x97, 0xD8, 0xBB];
 //! let nonce = arr![u8; 0x0C, 0x5F, 0x04, 0xE8, 0xB5, 0x12, 0x19, 0x5E, 0x74, 0xB3, 0xDE, 0x57, 0xE9, 0x70, 0x97, 0x9E];
@@ -24,24 +21,23 @@
 //! lea128ctr.apply_keystream(&mut block);
 //! assert_eq!(block, ctxt);
 //!
-//! // Decryption
 //! lea128ctr.seek(0);
+//!
+//! // Decryption
 //! let mut block = ctxt.clone();
 //! lea128ctr.apply_keystream(&mut block);
 //! assert_eq!(block, ptxt);
 //! ```
 
-extern crate ctr_crate as ctr;
+pub use ctr::cipher;
 
-pub use ctr::cipher::stream;
-
-use ctr::Ctr128;
+use ctr::Ctr64BE;
 
 use crate::{Lea128, Lea192, Lea256};
 
-pub type Lea128Ctr = Ctr128<Lea128>;
-pub type Lea192Ctr = Ctr128<Lea192>;
-pub type Lea256Ctr = Ctr128<Lea256>;
+pub type Lea128Ctr = Ctr64BE<Lea128>;
+pub type Lea192Ctr = Ctr64BE<Lea192>;
+pub type Lea256Ctr = Ctr64BE<Lea256>;
 
 #[cfg(test)]
 mod tests {
@@ -49,16 +45,10 @@ mod tests {
 
 	use alloc::{vec::Vec, vec};
 
-	use super::{
-		stream::{
-			generic_array::{GenericArray, arr},
-			NewStreamCipher, SyncStreamCipher, SyncStreamCipherSeek
-		},
-		Lea128Ctr, Lea192Ctr, Lea256Ctr
-	};
+	use crate::{prelude::*, Lea128Ctr, Lea192Ctr, Lea256Ctr};
 
 	struct TestCase<T> where
-	T: NewStreamCipher {
+	T: NewCipher {
 		key: GenericArray<u8, T::KeySize>,
 		nonce: GenericArray<u8, T::NonceSize>,
 		ptxt: Vec<u8>,
