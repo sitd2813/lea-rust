@@ -84,7 +84,7 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases.iter() {
+		for test_case in test_cases {
 			let mut lea128ctr = Lea128Ctr::new(&test_case.key, &test_case.nonce);
 
 			// Encryption
@@ -129,7 +129,7 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases.iter() {
+		for test_case in test_cases {
 			let mut lea192ctr = Lea192Ctr::new(&test_case.key, &test_case.nonce);
 
 			// Encryption
@@ -174,7 +174,7 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases.iter() {
+		for test_case in test_cases {
 			let mut lea256ctr = Lea256Ctr::new(&test_case.key, &test_case.nonce);
 
 			// Encryption
