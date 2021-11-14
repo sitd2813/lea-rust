@@ -97,7 +97,7 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases.iter() {
+		for test_case in test_cases {
 			let lea128ccm = Lea128Ccm::new(&test_case.key);
 
 			// Encryption
@@ -152,7 +152,7 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases.iter() {
+		for test_case in test_cases {
 			let lea192ccm = Lea192Ccm::new(&test_case.key);
 
 			// Encryption
@@ -207,7 +207,7 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases.iter() {
+		for test_case in test_cases {
 			let lea256ccm = Lea256Ccm::new(&test_case.key);
 
 			// Encryption

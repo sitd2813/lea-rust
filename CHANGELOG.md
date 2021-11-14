@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.5.0] 2021-XX-XX
+## [0.5.1] (2021-11-14)
+
+### Changed
+
+- Dependency `ctr = 0.7.*` is updated to `ctr = 0.8.*`.
+- Edition is updated to 2021.
+
+## [0.5.0] (2021-05-21)
 
 ### Added
 
@@ -12,13 +19,13 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Default features `["ccm", "ctr"]` are changed to `[]`.
-- Dependency `cipher = "0.2.*"` updated to `cipher = "0.3.*"`. Other dependencies are also updated accordingly.
+- Dependency `cipher = "0.2.*"` is updated to `cipher = "0.3.*"`. Other dependencies are also updated accordingly.
 
 ### Removed
 
 - Redundant benchmarks are removed.
 
-## [0.4.0] – 2020-11-22
+## [0.4.0] (2020-11-22)
 
 ### Added
 
@@ -35,15 +42,16 @@ All notable changes to this project will be documented in this file.
 
 - `lea::Block` is removed.
 
-## [0.3.1] – 2020-10-22
+## [0.3.1] (2020-10-22)
 
 ### Changed
 
 - Block cipher trait crate is changed from `block-cipher` to `cipher`.
 - Round key implementation is separated from [`lib.rs`](./src/lib.rs) to [`round_key.rs`](./src/round_key.rs).
 
-## [0.3.0] – 2020-10-04
+## [0.3.0] (2020-10-04)
 
+[0.5.1]: https://github.com/sitd0813/lea-rust/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/sitd0813/lea-rust/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/sitd0813/lea-rust/compare/0.3.1...0.4.0
 [0.3.1]: https://github.com/sitd0813/lea-rust/compare/0.3.0...0.3.1

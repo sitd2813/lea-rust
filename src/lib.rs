@@ -26,6 +26,7 @@
 //! assert_eq!(block, ptxt);
 //! ```
 
+#![allow(mixed_script_confusables)]
 #![no_std]
 
 pub mod prelude {
@@ -52,11 +53,9 @@ pub use crate::ccm::{Lea128Ccm, Lea192Ccm, Lea256Ccm};
 #[cfg(feature = "ctr")]
 pub use crate::ctr::{Lea128Ctr, Lea192Ctr, Lea256Ctr};
 
-use cipher::{
-	consts::{U8, U16},
-	generic_array::{typenum::Unsigned, GenericArray},
-	BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher
-};
+use cipher::consts::{U8, U16};
+use cipher::generic_array::{typenum::Unsigned, GenericArray};
+use cipher::{BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
 
 use round_key::{RoundKey, Rk144, Rk168, Rk192};
 
@@ -407,16 +406,16 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases.iter() {
+		for test_case in test_cases {
 			let lea128 = Lea128::new(&test_case.key);
 
 			// Encryption
-			let mut block = test_case.ptxt.clone();
+			let mut block = test_case.ptxt;
 			lea128.encrypt_block(&mut block);
 			assert_eq!(block, test_case.ctxt);
 
 			// Decryption
-			let mut block = test_case.ctxt.clone();
+			let mut block = test_case.ctxt;
 			lea128.decrypt_block(&mut block);
 			assert_eq!(block, test_case.ptxt);
 		}
@@ -432,16 +431,16 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases.iter() {
+		for test_case in test_cases {
 			let lea192 = Lea192::new(&test_case.key);
 
 			// Encryption
-			let mut block = test_case.ptxt.clone();
+			let mut block = test_case.ptxt;
 			lea192.encrypt_block(&mut block);
 			assert_eq!(block, test_case.ctxt);
 
 			// Decryption
-			let mut block = test_case.ctxt.clone();
+			let mut block = test_case.ctxt;
 			lea192.decrypt_block(&mut block);
 			assert_eq!(block, test_case.ptxt);
 		}
@@ -457,16 +456,16 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases.iter() {
+		for test_case in test_cases {
 			let lea256 = Lea256::new(&test_case.key);
 
 			// Encryption
-			let mut block = test_case.ptxt.clone();
+			let mut block = test_case.ptxt;
 			lea256.encrypt_block(&mut block);
 			assert_eq!(block, test_case.ctxt);
 
 			// Decryption
-			let mut block = test_case.ctxt.clone();
+			let mut block = test_case.ctxt;
 			lea256.decrypt_block(&mut block);
 			assert_eq!(block, test_case.ptxt);
 		}

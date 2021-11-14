@@ -7,10 +7,8 @@
 
 use core::marker::PhantomData;
 
-use cipher::{
-	consts::{U16, U24, U32, U144, U168, U192},
-	generic_array::{ArrayLength, GenericArray}
-};
+use cipher::consts::{U16, U24, U32, U144, U168, U192};
+use cipher::generic_array::{ArrayLength, GenericArray};
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -31,7 +29,8 @@ RkSize: ArrayLength<u32> {
 	_p: PhantomData<RkSize>
 }
 
-const DELTA: [u32; 8] = [0xC3EFE9DB, 0x44626B02, 0x79E27C8A, 0x78DF30EC, 0x715EA49E, 0xC785DA0A, 0xE04EF22A, 0xE5C40957];
+#[allow(non_upper_case_globals)]
+const δ: [u32; 8] = [0xC3EFE9DB, 0x44626B02, 0x79E27C8A, 0x78DF30EC, 0x715EA49E, 0xC785DA0A, 0xE04EF22A, 0xE5C40957];
 
 impl RoundKey for Rk<U144> {
 	type KeySize = U16;
@@ -51,10 +50,10 @@ impl RoundKey for Rk<U144> {
 		let mut rk = GenericArray::default();
 
 		for i in 0..24 {
-			rk_t[0] = rk_t[0].wrapping_add(DELTA[i % 4].rotate_left(i as u32 + 0)).rotate_left(1);
-			rk_t[1] = rk_t[1].wrapping_add(DELTA[i % 4].rotate_left(i as u32 + 1)).rotate_left(3);
-			rk_t[2] = rk_t[2].wrapping_add(DELTA[i % 4].rotate_left(i as u32 + 2)).rotate_left(6);
-			rk_t[3] = rk_t[3].wrapping_add(DELTA[i % 4].rotate_left(i as u32 + 3)).rotate_left(11);
+			rk_t[0] = rk_t[0].wrapping_add(δ[i % 4].rotate_left(i as u32 + 0)).rotate_left(1);
+			rk_t[1] = rk_t[1].wrapping_add(δ[i % 4].rotate_left(i as u32 + 1)).rotate_left(3);
+			rk_t[2] = rk_t[2].wrapping_add(δ[i % 4].rotate_left(i as u32 + 2)).rotate_left(6);
+			rk_t[3] = rk_t[3].wrapping_add(δ[i % 4].rotate_left(i as u32 + 3)).rotate_left(11);
 
 			rk[6 * i + 0] = rk_t[0];
 			rk[6 * i + 1] = rk_t[1];
@@ -91,12 +90,12 @@ impl RoundKey for Rk<U168> {
 		let mut rk = GenericArray::default();
 
 		for i in 0..28 {
-			rk_t[0] = rk_t[0].wrapping_add(DELTA[i % 6].rotate_left(i as u32 + 0)).rotate_left(1);
-			rk_t[1] = rk_t[1].wrapping_add(DELTA[i % 6].rotate_left(i as u32 + 1)).rotate_left(3);
-			rk_t[2] = rk_t[2].wrapping_add(DELTA[i % 6].rotate_left(i as u32 + 2)).rotate_left(6);
-			rk_t[3] = rk_t[3].wrapping_add(DELTA[i % 6].rotate_left(i as u32 + 3)).rotate_left(11);
-			rk_t[4] = rk_t[4].wrapping_add(DELTA[i % 6].rotate_left(i as u32 + 4)).rotate_left(13);
-			rk_t[5] = rk_t[5].wrapping_add(DELTA[i % 6].rotate_left(i as u32 + 5)).rotate_left(17);
+			rk_t[0] = rk_t[0].wrapping_add(δ[i % 6].rotate_left(i as u32 + 0)).rotate_left(1);
+			rk_t[1] = rk_t[1].wrapping_add(δ[i % 6].rotate_left(i as u32 + 1)).rotate_left(3);
+			rk_t[2] = rk_t[2].wrapping_add(δ[i % 6].rotate_left(i as u32 + 2)).rotate_left(6);
+			rk_t[3] = rk_t[3].wrapping_add(δ[i % 6].rotate_left(i as u32 + 3)).rotate_left(11);
+			rk_t[4] = rk_t[4].wrapping_add(δ[i % 6].rotate_left(i as u32 + 4)).rotate_left(13);
+			rk_t[5] = rk_t[5].wrapping_add(δ[i % 6].rotate_left(i as u32 + 5)).rotate_left(17);
 
 			rk[6 * i + 0] = rk_t[0];
 			rk[6 * i + 1] = rk_t[1];
@@ -135,12 +134,12 @@ impl RoundKey for Rk<U192> {
 		let mut rk = GenericArray::default();
 
 		for i in 0..32 {
-			rk_t[(6 * i + 0) % 8] = rk_t[(6 * i + 0) % 8].wrapping_add(DELTA[i % 8].rotate_left(i as u32 + 0)).rotate_left(1);
-			rk_t[(6 * i + 1) % 8] = rk_t[(6 * i + 1) % 8].wrapping_add(DELTA[i % 8].rotate_left(i as u32 + 1)).rotate_left(3);
-			rk_t[(6 * i + 2) % 8] = rk_t[(6 * i + 2) % 8].wrapping_add(DELTA[i % 8].rotate_left(i as u32 + 2)).rotate_left(6);
-			rk_t[(6 * i + 3) % 8] = rk_t[(6 * i + 3) % 8].wrapping_add(DELTA[i % 8].rotate_left(i as u32 + 3)).rotate_left(11);
-			rk_t[(6 * i + 4) % 8] = rk_t[(6 * i + 4) % 8].wrapping_add(DELTA[i % 8].rotate_left(i as u32 + 4)).rotate_left(13);
-			rk_t[(6 * i + 5) % 8] = rk_t[(6 * i + 5) % 8].wrapping_add(DELTA[i % 8].rotate_left(i as u32 + 5)).rotate_left(17);
+			rk_t[(6 * i + 0) % 8] = rk_t[(6 * i + 0) % 8].wrapping_add(δ[i % 8].rotate_left(i as u32 + 0)).rotate_left(1);
+			rk_t[(6 * i + 1) % 8] = rk_t[(6 * i + 1) % 8].wrapping_add(δ[i % 8].rotate_left(i as u32 + 1)).rotate_left(3);
+			rk_t[(6 * i + 2) % 8] = rk_t[(6 * i + 2) % 8].wrapping_add(δ[i % 8].rotate_left(i as u32 + 2)).rotate_left(6);
+			rk_t[(6 * i + 3) % 8] = rk_t[(6 * i + 3) % 8].wrapping_add(δ[i % 8].rotate_left(i as u32 + 3)).rotate_left(11);
+			rk_t[(6 * i + 4) % 8] = rk_t[(6 * i + 4) % 8].wrapping_add(δ[i % 8].rotate_left(i as u32 + 4)).rotate_left(13);
+			rk_t[(6 * i + 5) % 8] = rk_t[(6 * i + 5) % 8].wrapping_add(δ[i % 8].rotate_left(i as u32 + 5)).rotate_left(17);
 
 			rk[6 * i + 0] = rk_t[(6 * i + 0) % 8];
 			rk[6 * i + 1] = rk_t[(6 * i + 1) % 8];
