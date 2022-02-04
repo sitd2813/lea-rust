@@ -1,7 +1,7 @@
 # **lea-rust**
 
 [![crates.io](https://img.shields.io/crates/v/lea.svg)](https://crates.io/crates/lea)
-[![doc.rs](https://docs.rs/lea/badge.svg)](https://docs.rs/lea)
+[![docs.rs](https://docs.rs/lea/badge.svg)](https://docs.rs/lea)
 
 **lea-rust** is an implementation of a 128-bit ARX block cipher LEA written in pure Rust.
 
@@ -26,7 +26,7 @@ See <https://en.wikipedia.org/wiki/LEA_(cipher)> and <https://seed.kisa.or.kr/ki
 
 ## License
 
-Copyright © 2020–2021 SitD <sitd0813@gmail.com>
+Copyright © 2020–2022 Gihun Nam <sitd0813@gmail.com>
 
 This project is subject to the terms of the [`MIT License`](./LICENSE.txt).
-If a copy of the MIT License was not distributed with this file, you can obtain one at <https://opensource.org/licenses/MIT>.
+If a copy of the license was not distributed with this file, you can obtain one at <https://opensource.org/licenses/MIT>.
