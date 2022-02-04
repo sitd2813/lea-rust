@@ -2,12 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.2] (2022-02-04)
+
+### Changed
+
+- Round key generation is optimized, resulting in 5 to 10% faster `Lea128::new`, `Lea192::new`, and `Lea256::new`.
+
 ## [0.5.1] (2021-11-14)
 
 ### Changed
 
 - Dependency `ctr = 0.7.*` is updated to `ctr = 0.8.*`.
-- Edition is updated to 2021.
+- Rust edition is updated from 2018 to 2021.
 
 ## [0.5.0] (2021-05-21)
 
@@ -51,6 +57,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.3.0] (2020-10-04)
 
+[0.5.2]: https://github.com/sitd0813/lea-rust/compare/0.5.1...0.5.2
 [0.5.1]: https://github.com/sitd0813/lea-rust/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/sitd0813/lea-rust/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/sitd0813/lea-rust/compare/0.3.1...0.4.0
