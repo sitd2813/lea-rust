@@ -1,7 +1,7 @@
 [package]
 name        = "lea"
 version     = "0.5.1"
-authors     = ["SitD <sitd0813@gmail.com>"]
+authors     = ["Gihun Nam <sitd0813@gmail.com>"]
 edition     = "2021"
 description = "Lightweight Encryption Algorithm (LEA)"
 categories  = ["cryptography", "no-std"]
