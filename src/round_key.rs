@@ -1,7 +1,7 @@
 // Copyright © 2020–2021 Gihun Nam <sitd0813@gmail.com>
 //
-// This file and its content are subject to the terms of the MIT License.
-// If a copy of the license was not distributed with this file, you can obtain one at <https://opensource.org/licenses/MIT>.
+// This file and its content are subject to the terms of the MIT License (the "License").
+// If a copy of the License was not distributed with this file, you can obtain one at https://opensource.org/licenses/MIT.
 
 //! LEA Round Key
 
