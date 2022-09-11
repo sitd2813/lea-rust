@@ -37,7 +37,7 @@ impl RoundKey for Rk<U144> {
 	type RkSize = U144;
 
 	fn generate(key: &GenericArray<u8, Self::KeySize>) -> GenericArray<u32, Self::RkSize> {
-		let mut rk_t = unsafe { *key.as_ptr().cast::<[u32; 4]>() };
+		let mut rk_t = unsafe { key.as_ptr().cast::<[u32; 4]>().read_unaligned() };
 		cfg_if::cfg_if! {
 			if #[cfg(target_endian = "big")] {
 				rk_t[0] = rk_t[0].swap_bytes();
@@ -79,7 +79,7 @@ impl RoundKey for Rk<U168> {
 	type RkSize = U168;
 
 	fn generate(key: &GenericArray<u8, Self::KeySize>) -> GenericArray<u32, Self::RkSize> {
-		let mut rk_t = unsafe { *key.as_ptr().cast::<[u32; 6]>() };
+		let mut rk_t = unsafe { key.as_ptr().cast::<[u32; 6]>().read_unaligned() };
 		cfg_if::cfg_if! {
 			if #[cfg(target_endian = "big")] {
 				rk_t[0] = rk_t[0].swap_bytes();
@@ -127,7 +127,7 @@ impl RoundKey for Rk<U192> {
 	type RkSize = U192;
 
 	fn generate(key: &GenericArray<u8, Self::KeySize>) -> GenericArray<u32, Self::RkSize> {
-		let mut rk_t = unsafe { *key.as_ptr().cast::<[u32; 8]>() };
+		let mut rk_t = unsafe { key.as_ptr().cast::<[u32; 8]>().read_unaligned() };
 		cfg_if::cfg_if! {
 			if #[cfg(target_endian = "big")] {
 				rk_t[0] = rk_t[0].swap_bytes();
