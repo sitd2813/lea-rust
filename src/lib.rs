@@ -99,7 +99,8 @@ Rk: RoundKey {
 
 fn encrypt_block<Rk>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut GenericArray<u8, <Lea<Rk> as BlockCipher>::BlockSize>) where
 Rk: RoundKey {
-	let block = unsafe { &mut *block.as_mut_ptr().cast::<[u32; 4]>() };
+	let orig = block;
+	let mut block = unsafe { orig.as_mut_ptr().cast::<[u32; 4]>().read_unaligned() };
 	cfg_if::cfg_if! {
 		if #[cfg(target_endian = "big")] {
 			block[0] = block[0].swap_bytes();
@@ -239,11 +240,15 @@ Rk: RoundKey {
 			block[3] = block[3].swap_bytes();
 		}
 	}
+	unsafe {
+		core::ptr::write_unaligned(orig.as_mut_ptr().cast(), block);
+	}
 }
 
 fn decrypt_block<Rk>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut GenericArray<u8, <Lea<Rk> as BlockCipher>::BlockSize>) where
 Rk: RoundKey {
-	let block = unsafe { &mut *block.as_mut_ptr().cast::<[u32; 4]>() };
+	let orig = block;
+	let mut block = unsafe { orig.as_mut_ptr().cast::<[u32; 4]>().read_unaligned() };
 	cfg_if::cfg_if! {
 		if #[cfg(target_endian = "big")] {
 			block[0] = block[0].swap_bytes();
@@ -382,6 +387,9 @@ Rk: RoundKey {
 			block[2] = block[2].swap_bytes();
 			block[3] = block[3].swap_bytes();
 		}
+	}
+	unsafe {
+		core::ptr::write_unaligned(orig.as_mut_ptr().cast(), block);
 	}
 }
 
