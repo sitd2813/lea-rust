@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.3] (2022-09-17)
+
+### Fixed
+
+- UB caused by misaligned pointers (by @clubby789)
+
 ## [0.5.2] (2022-02-04)
 
 ### Changed
@@ -57,6 +63,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.3.0] (2020-10-04)
 
+[0.5.3]: https://github.com/sitd0813/lea-rust/compare/0.5.2...0.5.3
 [0.5.2]: https://github.com/sitd0813/lea-rust/compare/0.5.1...0.5.2
 [0.5.1]: https://github.com/sitd0813/lea-rust/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/sitd0813/lea-rust/compare/0.4.0...0.5.0

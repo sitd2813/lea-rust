@@ -1,4 +1,4 @@
-// Copyright © 2020–2021 Gihun Nam <sitd0813@gmail.com>
+// Copyright © 2020–2022 Gihun Nam <sitd0813@gmail.com>
 //
 // This file and its content are subject to the terms of the MIT License (the "License").
 // If a copy of the License was not distributed with this file, you can obtain one at https://opensource.org/licenses/MIT.
