@@ -4,7 +4,7 @@
 // If a copy of the License was not distributed with this file, you can obtain one at https://opensource.org/licenses/MIT.
 
 //! LEA-CTR
-//! 
+//!
 //! * Example
 //! ```
 //! use lea::{prelude::*, Lea128Ctr};

@@ -120,7 +120,7 @@ Rk: RoundKey {
 	// 		block[3] = p0;
 	// 	}
 	// }
-	
+
 	// 24 rounds for 128-bit key
 	block[3] = (block[2] ^ rk[4]).wrapping_add(block[3] ^ rk[5]).rotate_right(3);
 	block[2] = (block[1] ^ rk[2]).wrapping_add(block[2] ^ rk[3]).rotate_right(5);
@@ -268,7 +268,7 @@ Rk: RoundKey {
 	// 		block[3] = c2.rotate_left(3).wrapping_sub(block[2] ^ rk4) ^ rk5;
 	// 	}
 	// }
-	
+
 	// 28 rounds for 192-bit key
 	if <Rk::RkSize as Unsigned>::USIZE / 6 >= 28 {
 		// 32 rounds for 256-bit key
@@ -300,7 +300,7 @@ Rk: RoundKey {
 		block[2] = block[2].rotate_left(5).wrapping_sub(block[1] ^ rk[146]) ^ rk[147];
 		block[3] = block[3].rotate_left(3).wrapping_sub(block[2] ^ rk[148]) ^ rk[149];
 	}
-	
+
 	// 24 rounds for 128-bit key
 	block[0] = block[0].rotate_right(9).wrapping_sub(block[3] ^ rk[138]) ^ rk[139];
 	block[1] = block[1].rotate_left(5).wrapping_sub(block[0] ^ rk[140]) ^ rk[141];
@@ -314,7 +314,7 @@ Rk: RoundKey {
 	block[1] = block[1].rotate_right(9).wrapping_sub(block[0] ^ rk[120]) ^ rk[121];
 	block[2] = block[2].rotate_left(5).wrapping_sub(block[1] ^ rk[122]) ^ rk[123];
 	block[3] = block[3].rotate_left(3).wrapping_sub(block[2] ^ rk[124]) ^ rk[125];
-	
+
 	block[0] = block[0].rotate_right(9).wrapping_sub(block[3] ^ rk[114]) ^ rk[115];
 	block[1] = block[1].rotate_left(5).wrapping_sub(block[0] ^ rk[116]) ^ rk[117];
 	block[2] = block[2].rotate_left(3).wrapping_sub(block[1] ^ rk[118]) ^ rk[119];
@@ -327,7 +327,7 @@ Rk: RoundKey {
 	block[1] = block[1].rotate_right(9).wrapping_sub(block[0] ^ rk[96]) ^ rk[97];
 	block[2] = block[2].rotate_left(5).wrapping_sub(block[1] ^ rk[98]) ^ rk[99];
 	block[3] = block[3].rotate_left(3).wrapping_sub(block[2] ^ rk[100]) ^ rk[101];
-	
+
 	block[0] = block[0].rotate_right(9).wrapping_sub(block[3] ^ rk[90]) ^ rk[91];
 	block[1] = block[1].rotate_left(5).wrapping_sub(block[0] ^ rk[92]) ^ rk[93];
 	block[2] = block[2].rotate_left(3).wrapping_sub(block[1] ^ rk[94]) ^ rk[95];
@@ -340,7 +340,7 @@ Rk: RoundKey {
 	block[1] = block[1].rotate_right(9).wrapping_sub(block[0] ^ rk[72]) ^ rk[73];
 	block[2] = block[2].rotate_left(5).wrapping_sub(block[1] ^ rk[74]) ^ rk[75];
 	block[3] = block[3].rotate_left(3).wrapping_sub(block[2] ^ rk[76]) ^ rk[77];
-	
+
 	block[0] = block[0].rotate_right(9).wrapping_sub(block[3] ^ rk[66]) ^ rk[67];
 	block[1] = block[1].rotate_left(5).wrapping_sub(block[0] ^ rk[68]) ^ rk[69];
 	block[2] = block[2].rotate_left(3).wrapping_sub(block[1] ^ rk[70]) ^ rk[71];
@@ -353,7 +353,7 @@ Rk: RoundKey {
 	block[1] = block[1].rotate_right(9).wrapping_sub(block[0] ^ rk[48]) ^ rk[49];
 	block[2] = block[2].rotate_left(5).wrapping_sub(block[1] ^ rk[50]) ^ rk[51];
 	block[3] = block[3].rotate_left(3).wrapping_sub(block[2] ^ rk[52]) ^ rk[53];
-	
+
 	block[0] = block[0].rotate_right(9).wrapping_sub(block[3] ^ rk[42]) ^ rk[43];
 	block[1] = block[1].rotate_left(5).wrapping_sub(block[0] ^ rk[44]) ^ rk[45];
 	block[2] = block[2].rotate_left(3).wrapping_sub(block[1] ^ rk[46]) ^ rk[47];
@@ -366,7 +366,7 @@ Rk: RoundKey {
 	block[1] = block[1].rotate_right(9).wrapping_sub(block[0] ^ rk[24]) ^ rk[25];
 	block[2] = block[2].rotate_left(5).wrapping_sub(block[1] ^ rk[26]) ^ rk[27];
 	block[3] = block[3].rotate_left(3).wrapping_sub(block[2] ^ rk[28]) ^ rk[29];
-	
+
 	block[0] = block[0].rotate_right(9).wrapping_sub(block[3] ^ rk[18]) ^ rk[19];
 	block[1] = block[1].rotate_left(5).wrapping_sub(block[0] ^ rk[20]) ^ rk[21];
 	block[2] = block[2].rotate_left(3).wrapping_sub(block[1] ^ rk[22]) ^ rk[23];
