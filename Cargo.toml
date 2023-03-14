@@ -1,6 +1,6 @@
 [package]
 name        = "lea"
-version     = "0.5.4-pre"
+version     = "0.5.4"
 authors     = ["남기훈 <gihunnam@proton.me>"]
 edition     = "2021"
 description = "Lightweight Encryption Algorithm (LEA)"
