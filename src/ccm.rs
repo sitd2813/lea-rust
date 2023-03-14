@@ -12,7 +12,7 @@
 //! let key = arr![u8; 0x67, 0x0F, 0xD2, 0x86, 0xDF, 0x28, 0x3C, 0x66, 0x2D, 0xB8, 0x64, 0xA6, 0x81, 0xB9, 0xAB, 0x35];
 //! let nonce = arr![u8; 0xE5, 0x9E, 0x05, 0x4A, 0x7E, 0x8B, 0x58, 0x40];
 //! let tag = arr![u8; 0xE3, 0xE9, 0x85, 0xF0, 0xD9, 0xA5, 0x9D, 0xB0, 0xB7, 0xB4, 0xEF, 0x63, 0x19, 0x4D, 0x62, 0xFB];
-//! let associated_data = vec![];
+//! let associated_data = [];
 //! let ptxt = [0x0E, 0xC5, 0x26, 0xA3, 0xBE, 0x68, 0x6C, 0x8B];
 //! let ctxt = [0x90, 0xB7, 0x61, 0x8D, 0x8A, 0x50, 0x72, 0x3C];
 //!
@@ -20,13 +20,13 @@
 //! let mut lea128ccm = Lea128Ccm::<U8>::new(&key);
 //!
 //! // Encryption
-//! let mut buffer = ptxt.clone();
+//! let mut buffer = ptxt;
 //! let calculated_tag: Result<_, aead::Error> = lea128ccm.encrypt_in_place_detached(&nonce, &associated_data, &mut buffer);
 //! assert_eq!(buffer, ctxt);
 //! assert_eq!(calculated_tag.unwrap(), tag);
 //!
 //! // Decryption
-//! let mut buffer = ctxt.clone();
+//! let mut buffer = ctxt;
 //! let _: Result<(), aead::Error> = lea128ccm.decrypt_in_place_detached(&nonce, &associated_data, &mut buffer, &tag);
 //! assert_eq!(buffer, ptxt);
 //! ```
@@ -97,19 +97,19 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases {
-			let lea128ccm = Lea128Ccm::new(&test_case.key);
+		for TestCase { key, nonce, tag, associated_data, ptxt, ctxt } in test_cases {
+			let lea128ccm = Lea128Ccm::new(&key);
 
 			// Encryption
-			let mut buffer = test_case.ptxt.clone();
-			let tag = lea128ccm.encrypt_in_place_detached(&test_case.nonce, &test_case.associated_data, &mut buffer)?;
-			assert_eq!(buffer, test_case.ctxt);
-			assert_eq!(tag, test_case.tag);
+			let mut buffer = ptxt.clone();
+			let calculated_tag = lea128ccm.encrypt_in_place_detached(&nonce, &associated_data, &mut buffer)?;
+			assert_eq!(buffer, ctxt);
+			assert_eq!(calculated_tag, tag);
 
 			// Decryption
-			let mut buffer = test_case.ctxt.clone();
-			lea128ccm.decrypt_in_place_detached(&test_case.nonce, &test_case.associated_data, &mut buffer, &test_case.tag)?;
-			assert_eq!(buffer, test_case.ptxt);
+			let mut buffer = ctxt.clone();
+			lea128ccm.decrypt_in_place_detached(&nonce, &associated_data, &mut buffer, &tag)?;
+			assert_eq!(buffer, ptxt);
 		}
 
 		Ok(())
@@ -152,19 +152,19 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases {
-			let lea192ccm = Lea192Ccm::new(&test_case.key);
+		for  TestCase { key, nonce, tag, associated_data, ptxt, ctxt } in test_cases {
+			let lea192ccm = Lea192Ccm::new(&key);
 
 			// Encryption
-			let mut buffer = test_case.ptxt.clone();
-			let tag = lea192ccm.encrypt_in_place_detached(&test_case.nonce, &test_case.associated_data, &mut buffer)?;
-			assert_eq!(buffer, test_case.ctxt);
-			assert_eq!(tag, test_case.tag);
+			let mut buffer = ptxt.clone();
+			let calculated_tag = lea192ccm.encrypt_in_place_detached(&nonce, &associated_data, &mut buffer)?;
+			assert_eq!(buffer, ctxt);
+			assert_eq!(calculated_tag, tag);
 
 			// Decryption
-			let mut buffer = test_case.ctxt.clone();
-			lea192ccm.decrypt_in_place_detached(&test_case.nonce, &test_case.associated_data, &mut buffer, &test_case.tag)?;
-			assert_eq!(buffer, test_case.ptxt);
+			let mut buffer = ctxt.clone();
+			lea192ccm.decrypt_in_place_detached(&nonce, &associated_data, &mut buffer, &tag)?;
+			assert_eq!(buffer, ptxt);
 		}
 
 		Ok(())
@@ -207,19 +207,19 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases {
-			let lea256ccm = Lea256Ccm::new(&test_case.key);
+		for  TestCase { key, nonce, tag, associated_data, ptxt, ctxt } in test_cases {
+			let lea256ccm = Lea256Ccm::new(&key);
 
 			// Encryption
-			let mut buffer = test_case.ptxt.clone();
-			let tag = lea256ccm.encrypt_in_place_detached(&test_case.nonce, &test_case.associated_data, &mut buffer)?;
-			assert_eq!(buffer, test_case.ctxt);
-			assert_eq!(tag, test_case.tag);
+			let mut buffer = ptxt.clone();
+			let calculated_tag = lea256ccm.encrypt_in_place_detached(&nonce, &associated_data, &mut buffer)?;
+			assert_eq!(buffer, ctxt);
+			assert_eq!(calculated_tag, tag);
 
 			// Decryption
-			let mut buffer = test_case.ctxt.clone();
-			lea256ccm.decrypt_in_place_detached(&test_case.nonce, &test_case.associated_data, &mut buffer, &test_case.tag)?;
-			assert_eq!(buffer, test_case.ptxt);
+			let mut buffer = ctxt.clone();
+			lea256ccm.decrypt_in_place_detached(&nonce, &associated_data, &mut buffer, &tag)?;
+			assert_eq!(buffer, ptxt);
 		}
 
 		Ok(())

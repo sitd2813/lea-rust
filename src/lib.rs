@@ -16,12 +16,12 @@
 //! let lea128 = Lea128::new(&key);
 //!
 //! // Encryption
-//! let mut block = ptxt.clone();
+//! let mut block = ptxt;
 //! lea128.encrypt_block(&mut block);
 //! assert_eq!(block, ctxt);
 //!
 //! // Decryption
-//! let mut block = ctxt.clone();
+//! let mut block = ctxt;
 //! lea128.decrypt_block(&mut block);
 //! assert_eq!(block, ptxt);
 //! ```

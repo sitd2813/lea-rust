@@ -17,14 +17,14 @@
 //! let mut lea128ctr = Lea128Ctr::new(&key, &nonce);
 //!
 //! // Encryption
-//! let mut block = ptxt.clone();
+//! let mut block = ptxt;
 //! lea128ctr.apply_keystream(&mut block);
 //! assert_eq!(block, ctxt);
 //!
 //! lea128ctr.seek(0);
 //!
 //! // Decryption
-//! let mut block = ctxt.clone();
+//! let mut block = ctxt;
 //! lea128ctr.apply_keystream(&mut block);
 //! assert_eq!(block, ptxt);
 //! ```
@@ -84,19 +84,19 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases {
-			let mut lea128ctr = Lea128Ctr::new(&test_case.key, &test_case.nonce);
+		for TestCase { key, nonce, ptxt, ctxt } in test_cases {
+			let mut lea128ctr = Lea128Ctr::new(&key, &nonce);
 
 			// Encryption
-			let mut block = test_case.ptxt.clone();
+			let mut block = ptxt.clone();
 			lea128ctr.apply_keystream(&mut block);
-			assert_eq!(block, test_case.ctxt);
+			assert_eq!(block, ctxt);
 
 			// Decryption
 			lea128ctr.seek(0);
-			let mut block = test_case.ctxt.clone();
+			let mut block = ctxt.clone();
 			lea128ctr.apply_keystream(&mut block);
-			assert_eq!(block, test_case.ptxt);
+			assert_eq!(block, ptxt);
 		}
 	}
 
@@ -129,19 +129,19 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases {
-			let mut lea192ctr = Lea192Ctr::new(&test_case.key, &test_case.nonce);
+		for TestCase { key, nonce, ptxt, ctxt } in test_cases {
+			let mut lea192ctr = Lea192Ctr::new(&key, &nonce);
 
 			// Encryption
-			let mut block = test_case.ptxt.clone();
+			let mut block = ptxt.clone();
 			lea192ctr.apply_keystream(&mut block);
-			assert_eq!(block, test_case.ctxt);
+			assert_eq!(block, ctxt);
 
 			// Decryption
 			lea192ctr.seek(0);
-			let mut block = test_case.ctxt.clone();
+			let mut block = ctxt.clone();
 			lea192ctr.apply_keystream(&mut block);
-			assert_eq!(block, test_case.ptxt);
+			assert_eq!(block, ptxt);
 		}
 	}
 
@@ -174,19 +174,19 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases {
-			let mut lea256ctr = Lea256Ctr::new(&test_case.key, &test_case.nonce);
+		for TestCase { key, nonce, ptxt, ctxt } in test_cases {
+			let mut lea256ctr = Lea256Ctr::new(&key, &nonce);
 
 			// Encryption
-			let mut block = test_case.ptxt.clone();
+			let mut block = ptxt.clone();
 			lea256ctr.apply_keystream(&mut block);
-			assert_eq!(block, test_case.ctxt);
+			assert_eq!(block, ctxt);
 
 			// Decryption
 			lea256ctr.seek(0);
-			let mut block = test_case.ctxt.clone();
+			let mut block = ctxt.clone();
 			lea256ctr.apply_keystream(&mut block);
-			assert_eq!(block, test_case.ptxt);
+			assert_eq!(block, ptxt);
 		}
 	}
 }
