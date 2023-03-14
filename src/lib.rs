@@ -53,6 +53,9 @@ pub use crate::ccm::{Lea128Ccm, Lea192Ccm, Lea256Ccm};
 #[cfg(feature = "ctr")]
 pub use crate::ctr::{Lea128Ctr, Lea192Ctr, Lea256Ctr};
 
+use core::mem;
+use core::ptr;
+
 use cipher::consts::{U8, U16};
 use cipher::generic_array::{typenum::Unsigned, GenericArray};
 use cipher::{BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
@@ -99,8 +102,19 @@ Rk: RoundKey {
 
 fn encrypt_block<Rk>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut GenericArray<u8, <Lea<Rk> as BlockCipher>::BlockSize>) where
 Rk: RoundKey {
-	let orig = block;
-	let mut block = unsafe { orig.as_mut_ptr().cast::<[u32; 4]>().read_unaligned() };
+	let block_orig = block;
+	let mut block_copy;
+
+	let block_ptr = block_orig.as_ptr().cast::<[u32; 4]>();
+	let block_is_aligned = block_ptr.align_offset(mem::align_of::<[u32; 4]>()) == 0;
+	let block = if block_is_aligned {
+		unsafe { &mut *block_orig.as_mut_ptr().cast::<[u32; 4]>() }
+	} else {
+		block_copy = unsafe { block_ptr.read_unaligned() };
+
+		&mut block_copy
+	};
+
 	cfg_if::cfg_if! {
 		if #[cfg(target_endian = "big")] {
 			block[0] = block[0].swap_bytes();
@@ -240,15 +254,29 @@ Rk: RoundKey {
 			block[3] = block[3].swap_bytes();
 		}
 	}
-	unsafe {
-		core::ptr::write_unaligned(orig.as_mut_ptr().cast(), block);
+
+	if !block_is_aligned {
+		unsafe {
+			ptr::write_unaligned(block_orig.as_mut_ptr().cast::<[u32; 4]>(), *block);
+		}
 	}
 }
 
 fn decrypt_block<Rk>(rk: &GenericArray<u32, Rk::RkSize>, block: &mut GenericArray<u8, <Lea<Rk> as BlockCipher>::BlockSize>) where
 Rk: RoundKey {
-	let orig = block;
-	let mut block = unsafe { orig.as_mut_ptr().cast::<[u32; 4]>().read_unaligned() };
+	let block_orig = block;
+	let mut block_copy;
+
+	let block_ptr = block_orig.as_ptr().cast::<[u32; 4]>();
+	let block_is_aligned = block_ptr.align_offset(mem::align_of::<[u32; 4]>()) == 0;
+	let block = if block_is_aligned {
+		unsafe { &mut *block_orig.as_mut_ptr().cast::<[u32; 4]>() }
+	} else {
+		block_copy = unsafe { block_ptr.read_unaligned() };
+
+		&mut block_copy
+	};
+
 	cfg_if::cfg_if! {
 		if #[cfg(target_endian = "big")] {
 			block[0] = block[0].swap_bytes();
@@ -388,13 +416,18 @@ Rk: RoundKey {
 			block[3] = block[3].swap_bytes();
 		}
 	}
-	unsafe {
-		core::ptr::write_unaligned(orig.as_mut_ptr().cast(), block);
+
+	if !block_is_aligned {
+		unsafe {
+			ptr::write_unaligned(block_orig.as_mut_ptr().cast::<[u32; 4]>(), *block);
+		}
 	}
 }
 
 #[cfg(test)]
 mod tests {
+	use core::mem;
+
 	use crate::{prelude::*, Lea128, Lea192, Lea256};
 
 	struct TestCase<T> where
@@ -427,6 +460,37 @@ mod tests {
 			lea128.decrypt_block(&mut block);
 			assert_eq!(block, ptxt);
 		}
+	}
+
+	#[test]
+	fn lea128_unaligned() {
+		let ptxt = arr![u8; 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F];
+		let ctxt = arr![u8; 0x9F, 0xC8, 0x4E, 0x35, 0x28, 0xC6, 0xC6, 0x18, 0x55, 0x32, 0xC7, 0xA7, 0x04, 0x64, 0x8B, 0xFD];
+
+		let key_unaligned = arr![u8; '!', 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0];
+		let ptxt_unaligned = arr![u8; '!', 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F];
+		let ctxt_unaligned = arr![u8; '!', 0x9F, 0xC8, 0x4E, 0x35, 0x28, 0xC6, 0xC6, 0x18, 0x55, 0x32, 0xC7, 0xA7, 0x04, 0x64, 0x8B, 0xFD];
+
+		let ref_key_unaligned = unsafe { & *key_unaligned.as_ptr().add(1).cast::<GenericArray<u8, <Lea128 as NewBlockCipher>::KeySize>>() };
+		assert_ne!(ref_key_unaligned.as_ptr().align_offset(mem::align_of::<[u32; 4]>()), 0);
+
+		let lea128 = Lea128::new(ref_key_unaligned);
+
+		// Encrypt
+		let mut block = ptxt_unaligned;
+		let mut_block_unaligned = unsafe { &mut *block.as_mut_ptr().add(1).cast::<GenericArray<u8, <Lea128 as BlockCipher>::BlockSize>>() };
+		assert_ne!(mut_block_unaligned.as_ptr().align_offset(mem::align_of::<[u32; 4]>()), 0);
+
+		lea128.encrypt_block(mut_block_unaligned);
+		assert_eq!(*mut_block_unaligned, ctxt);
+
+		// Decrypt
+		let mut block = ctxt_unaligned;
+		let mut_block_unaligned = unsafe { &mut *block.as_mut_ptr().add(1).cast::<GenericArray<u8, <Lea128 as BlockCipher>::BlockSize>>() };
+		assert_ne!(mut_block_unaligned.as_ptr().align_offset(mem::align_of::<[u32; 4]>()), 0);
+
+		lea128.decrypt_block(mut_block_unaligned);
+		assert_eq!(*mut_block_unaligned, ptxt);
 	}
 
 	#[test]

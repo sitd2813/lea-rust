@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [0.5.4] (XXXX-XX-XX)
 
+### 🛠️Fix
+
+- Performance drop when the pointer is correctly aligned
+
 ### ✨Upgrade
 
 - `criterion` (`0.3.*` → `0.4.*`)
