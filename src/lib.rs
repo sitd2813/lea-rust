@@ -1,4 +1,4 @@
-// Copyright © 2020–2022 Gihun Nam <sitd0813@gmail.com>
+// Copyright © 2020–2023 남기훈 <gihunnam@proton.me>
 //
 // This file and its content are subject to the terms of the MIT License (the "License").
 // If a copy of the License was not distributed with this file, you can obtain one at https://opensource.org/licenses/MIT.
@@ -414,18 +414,18 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases {
-			let lea128 = Lea128::new(&test_case.key);
+		for TestCase { key, ptxt, ctxt } in test_cases {
+			let lea128 = Lea128::new(&key);
 
 			// Encryption
-			let mut block = test_case.ptxt;
+			let mut block = ptxt;
 			lea128.encrypt_block(&mut block);
-			assert_eq!(block, test_case.ctxt);
+			assert_eq!(block, ctxt);
 
 			// Decryption
-			let mut block = test_case.ctxt;
+			let mut block = ctxt;
 			lea128.decrypt_block(&mut block);
-			assert_eq!(block, test_case.ptxt);
+			assert_eq!(block, ptxt);
 		}
 	}
 
@@ -439,18 +439,18 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases {
-			let lea192 = Lea192::new(&test_case.key);
+		for TestCase { key, ptxt, ctxt } in test_cases {
+			let lea192 = Lea192::new(&key);
 
 			// Encryption
-			let mut block = test_case.ptxt;
+			let mut block = ptxt;
 			lea192.encrypt_block(&mut block);
-			assert_eq!(block, test_case.ctxt);
+			assert_eq!(block, ctxt);
 
 			// Decryption
-			let mut block = test_case.ctxt;
+			let mut block = ctxt;
 			lea192.decrypt_block(&mut block);
-			assert_eq!(block, test_case.ptxt);
+			assert_eq!(block, ptxt);
 		}
 	}
 
@@ -464,18 +464,18 @@ mod tests {
 			}
 		];
 
-		for test_case in test_cases {
-			let lea256 = Lea256::new(&test_case.key);
+		for TestCase { key, ptxt, ctxt } in test_cases {
+			let lea256 = Lea256::new(&key);
 
 			// Encryption
-			let mut block = test_case.ptxt;
+			let mut block = ptxt;
 			lea256.encrypt_block(&mut block);
-			assert_eq!(block, test_case.ctxt);
+			assert_eq!(block, ctxt);
 
 			// Decryption
-			let mut block = test_case.ctxt;
+			let mut block = ctxt;
 			lea256.decrypt_block(&mut block);
-			assert_eq!(block, test_case.ptxt);
+			assert_eq!(block, ptxt);
 		}
 	}
 }

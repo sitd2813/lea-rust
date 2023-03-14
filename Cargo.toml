@@ -1,13 +1,13 @@
 [package]
 name        = "lea"
 version     = "0.5.4-pre"
-authors     = ["Gihun Nam <sitd0813@gmail.com>"]
+authors     = ["남기훈 <gihunnam@proton.me>"]
 edition     = "2021"
 description = "Lightweight Encryption Algorithm (LEA)"
 categories  = ["cryptography", "no-std"]
 keywords    = ["cipher", "cryptography", "lea"]
 license     = "MIT"
-repository  = "https://github.com/sitd0813/lea-rust"
+repository  = "https://github.com/sitd2813/lea-rust"
 
 [dependencies]
 cfg-if = "1.*.*"

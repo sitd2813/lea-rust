@@ -26,7 +26,7 @@ See <https://en.wikipedia.org/wiki/LEA_(cipher)> and <https://seed.kisa.or.kr/ki
 
 ## License
 
-Copyright © 2020–2022 Gihun Nam <sitd0813@gmail.com>
+Copyright © 2020–2023 남기훈 <gihunnam@proton.me>
 
 This project is subject to the terms of the [`MIT License`](./LICENSE.txt) (the "License").
 If a copy of the License was not distributed with this file, you can obtain one at <https://opensource.org/licenses/MIT>.
