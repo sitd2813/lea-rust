@@ -77,11 +77,4 @@ All notable changes to this project will be documented in this file.
 
 ## [0.3.0] (2020-10-04)
 
-[0.5.4]: https://github.com/sitd2813/lea-rust/compare/0.5.3...0.5.4
-[0.5.3]: https://github.com/sitd2813/lea-rust/compare/0.5.2...0.5.3
-[0.5.2]: https://github.com/sitd2813/lea-rust/compare/0.5.1...0.5.2
-[0.5.1]: https://github.com/sitd2813/lea-rust/compare/0.5.0...0.5.1
-[0.5.0]: https://github.com/sitd2813/lea-rust/compare/0.4.0...0.5.0
-[0.4.0]: https://github.com/sitd2813/lea-rust/compare/0.3.1...0.4.0
-[0.3.1]: https://github.com/sitd2813/lea-rust/compare/0.3.0...0.3.1
-[0.3.0]: https://github.com/sitd2813/lea-rust/releases/tag/0.3.0
+[0.5.4]: https://github.com/sitd2813/lea-rust/releases/tag/v0.5.4
