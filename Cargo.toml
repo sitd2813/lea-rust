@@ -9,6 +9,9 @@ keywords    = ["cipher", "cryptography", "lea"]
 license     = "MIT"
 repository  = "https://github.com/sitd2813/lea-rust"
 
+[package.metadata.docs.rs]
+features = ["ccm", "ctr"]
+
 [dependencies]
 cfg-if = "1.*.*"
 cipher = "0.3.*"
